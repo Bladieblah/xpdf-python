@@ -1,0 +1,2 @@
+include src/xpdf-python/*
+include src/xpdf-4.04/*
