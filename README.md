@@ -1,2 +1,2 @@
 # xpdf-python
-Python wrapper around the pdftotext functionality of xpdf
+Python wrapper around the pdftotext functionality of xpdf.
