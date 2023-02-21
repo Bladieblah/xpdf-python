@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <sstream>
+#include <vector>
 
 #include "gmem.h"
 #include "gmempp.h"
@@ -59,7 +60,7 @@ static void outputToStringStream(void *stream, const char *text, int len) {
   ((std::stringstream *)stream)->write(text, len);
 }
 
-std::string fileToString(char *fileName) {
+std::vector<std::string> fileToVectorString(char *fileName) {
   PDFDoc *doc;
   GString *textFileName;
   GString *ownerPW, *userPW;
@@ -67,7 +68,9 @@ std::string fileToString(char *fileName) {
   TextOutputDev *textOut;
   UnicodeMap *uMap;
   int exitCode;
-  std::stringstream *stream;
+
+  std::stringstream *stream = new std::stringstream();
+  std::vector<std::string> pages;
 
   exitCode = 99;
 
@@ -135,15 +138,11 @@ std::string fileToString(char *fileName) {
   // construct text file name
   textFileName = new GString(fileName);
 
-  // get page range
-  if (firstPage < 1) {
-    firstPage = 1;
-  }
-  if (lastPage < 1 || lastPage > doc->getNumPages()) {
-    lastPage = doc->getNumPages();
-  }
+  firstPage = 1;
+  lastPage = doc->getNumPages();
 
   textOutControl.mode = textOutTableLayout;
+  // textOutControl.mode = textOutRawOrder;
   textOutControl.fixedPitch = fixedPitch;
 
   textOutControl.clipText = clipText;
@@ -154,12 +153,14 @@ std::string fileToString(char *fileName) {
   textOutControl.marginTop = marginTop;
   textOutControl.marginBottom = marginBottom;
   
-  stream = new std::stringstream();
   textOut = new TextOutputDev(&outputToStringStream, stream, &textOutControl);
 
   if (textOut->isOk()) {
-    doc->displayPages(textOut, firstPage, lastPage, 72, 72, 0,
-		      gFalse, gTrue, gFalse);
+    for (int page = firstPage; page <= lastPage; page++) {
+      stream->str("");
+      doc->displayPages(textOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
+      pages.push_back(stream->str());
+    }
   } else {
     delete textOut;
     exitCode = 2;
@@ -182,11 +183,7 @@ std::string fileToString(char *fileName) {
   Object::memCheck(stderr);
   gMemReport(stderr);
 
-  if (exitCode) {
-    return std::string("");
-  }
-
-  return stream->str();
+  return pages;
 }
 
 int main(int argc, char **argv) {
@@ -194,8 +191,13 @@ int main(int argc, char **argv) {
   lastPage = 1;
 
   if (argc == 2) {
-    std::string result = fileToString(argv[1]);
-    fprintf(stderr, "%s", result.c_str());
+    int i = 0;
+    std::vector<std::string> result = fileToVectorString(argv[1]);
+    for (auto page : result) {
+      i++;
+      fprintf(stderr, "--------------------------------------- PAGE %d ---------------------------------------\n", i);
+      fprintf(stderr, "%s", page.c_str());
+    }
   }
 
   return 0;
