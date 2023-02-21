@@ -13,11 +13,6 @@
 #include <string.h>
 #include <sstream>
 
-#ifdef DEBUG_FP_LINUX
-#  include <fenv.h>
-#  include <fpu_control.h>
-#endif
-
 #include "gmem.h"
 #include "gmempp.h"
 #include "parseargs.h"
@@ -41,16 +36,10 @@
 
 static int firstPage = 1;
 static int lastPage = 0;
-static GBool physLayout = gFalse;
-static GBool simpleLayout = gFalse;
-static GBool simple2Layout = gFalse;
-static GBool tableLayout = gTrue;
-static GBool linePrinter = gFalse;
-static GBool rawOrder = gFalse;
 static double fixedPitch = 0;
-static double fixedLineSpacing = 0;
 static GBool clipText = gFalse;
-static GBool discardDiag = gFalse;
+static GBool discardDiag = gTrue;
+static GBool discardRotatedText = gTrue;
 static char textEncName[128] = "";
 static char textEOL[16] = "";
 static GBool noPageBreaks = gFalse;
@@ -64,42 +53,21 @@ static char userPassword[33] = "\001";
 static GBool verbose = gFalse;
 static GBool quiet = gFalse;
 static char cfgFileName[256] = "";
-static GBool listEncodings = gFalse;
-static GBool printVersion = gFalse;
-static GBool printHelp = gFalse;
 
 
 static void outputToStringStream(void *stream, const char *text, int len) {
   ((std::stringstream *)stream)->write(text, len);
 }
 
-int fileToString(char *filename) {
+std::string fileToString(char *fileName) {
   PDFDoc *doc;
-  char *fileName;
   GString *textFileName;
   GString *ownerPW, *userPW;
   TextOutputControl textOutControl;
   TextOutputDev *textOut;
   UnicodeMap *uMap;
-  GBool ok;
-  char *p;
   int exitCode;
   std::stringstream *stream;
-
-#ifdef DEBUG_FP_LINUX
-  // enable exceptions on floating point div-by-zero
-  feenableexcept(FE_DIVBYZERO);
-  // force 64-bit rounding: this avoids changes in output when minor
-  // code changes result in spills of x87 registers; it also avoids
-  // differences in output with valgrind's 64-bit floating point
-  // emulation (yes, this is a kludge; but it's pretty much
-  // unavoidable given the x87 instruction set; see gcc bug 323 for
-  // more info)
-  fpu_control_t cw;
-  _FPU_GETCW(cw);
-  cw = (fpu_control_t)((cw & ~_FPU_EXTENDED) | _FPU_DOUBLE);
-  _FPU_SETCW(cw);
-#endif
 
   exitCode = 99;
 
@@ -165,7 +133,7 @@ int fileToString(char *filename) {
 //   }
 
   // construct text file name
-  textFileName = new GString(filename);
+  textFileName = new GString(fileName);
 
   // get page range
   if (firstPage < 1) {
@@ -187,7 +155,6 @@ int fileToString(char *filename) {
   textOutControl.marginBottom = marginBottom;
   
   stream = new std::stringstream();
-
   textOut = new TextOutputDev(&outputToStringStream, stream, &textOutControl);
 
   if (textOut->isOk()) {
@@ -210,15 +177,26 @@ int fileToString(char *filename) {
   uMap->decRefCnt();
  err1:
   delete globalParams;
- err0:
 
   // check for memory leaks
   Object::memCheck(stderr);
   gMemReport(stderr);
 
-  return exitCode;
+  if (exitCode) {
+    return std::string("");
+  }
+
+  return stream->str();
 }
 
-int main() {
+int main(int argc, char **argv) {
+  firstPage = 1;
+  lastPage = 1;
+
+  if (argc == 2) {
+    std::string result = fileToString(argv[1]);
+    fprintf(stderr, "%s", result.c_str());
+  }
+
   return 0;
 }
