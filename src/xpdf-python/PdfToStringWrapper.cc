@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Python.h"
+#include "pdftostring.h"
 
 using namespace std;
 
@@ -12,7 +13,6 @@ using namespace std;
 PyObject *construct(PyObject *self, PyObject *args) {
     PTSConfig config;
     PdfToString *pts = new PdfToString(config);
-    vector<string> result = pts->loadFile(argv[1]);
     
     PyObject *ptsCapsule = PyCapsule_New((void *)pts, "ptsPtr", NULL);
     PyCapsule_SetPointer(ptsCapsule, (void *)pts);
@@ -23,19 +23,19 @@ PyObject *construct(PyObject *self, PyObject *args) {
 PyObject *loadFile(PyObject *self, PyObject *args) {
     PyObject *pobj0;
     vector<string> res;
-    string fileName;
+    Py_ssize_t size;
     
     PyObject *ptsCapsule;
-    PyArg_ParseTuple(args, "OO", &treeCapsule, &pobj0);
-    
-    PdfToString *pts = (PdfToString *)PyCapsule_GetPointer(ptsCapsule, "ptsPtr");
+    PyArg_ParseTuple(args, "OO", &ptsCapsule, &pobj0);
+    const char *fileName = PyUnicode_AsUTF8AndSize(pobj0, &size);
 
-    pts->loadFile(fileName);
+    PdfToString *pts = (PdfToString *)PyCapsule_GetPointer(ptsCapsule, "ptsPtr");
+    vector<string> result = pts->loadFile(fileName);
     
-    return Py_BuildValue("O", treeCapsule);
+    return Py_BuildValue("O", ptsCapsule);
 }
 
-PyObject *delete_object(PyObject *self, PyObject *args) {
+PyObject *deleteObject(PyObject *self, PyObject *args) {
     PyObject *ptsCapsule;
     PyArg_ParseTuple(args, "O", &ptsCapsule);
     
@@ -46,7 +46,7 @@ PyObject *delete_object(PyObject *self, PyObject *args) {
     return Py_BuildValue("");
 }
 
-PyMethodDef PdfToStringFunctions[] = {
+PyMethodDef cXpdfPythonFunctions[] = {
     {"construct",
       construct, METH_VARARGS,
      "Create `PdfToString` object"},
@@ -55,8 +55,8 @@ PyMethodDef PdfToStringFunctions[] = {
       loadFile, METH_VARARGS,
      "Fit the classifier"},
     
-    {"delete_object",
-      delete_object, METH_VARARGS,
+    {"deleteObject",
+      deleteObject, METH_VARARGS,
      "Delete `PdfToString` object"},
 
     {NULL, NULL, 0, NULL}      // Last function description must be empty.
@@ -65,7 +65,7 @@ PyMethodDef PdfToStringFunctions[] = {
 };
 
 
-struct PyModuleDef PdfToStringModule = {
+struct PyModuleDef cXpdfPythonModule = {
 /*
  *  Structure which defines the module.
  *
@@ -73,15 +73,15 @@ struct PyModuleDef PdfToStringModule = {
  *
  */
    PyModuleDef_HEAD_INIT,
-   "PdfToString",
+   "cXpdfPython",
    "Non-binary decision tree with an entropy-based splitting criterion.", 
    // Docstring for the module.
    -1,                   // Used by sub-interpreters, if you do not know what
                          // it is then you do not need it, keep -1 .
-   PdfToStringFunctions
+   cXpdfPythonFunctions
 };
 
 
-PyMODINIT_FUNC PyInit_PdfToString(void) {
-    return PyModule_Create(&PdfToStringModule);
+PyMODINIT_FUNC PyInit_cXpdfPython(void) {
+    return PyModule_Create(&cXpdfPythonModule);
 }

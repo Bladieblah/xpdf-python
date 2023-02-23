@@ -56,7 +56,7 @@ PdfToString::PdfToString(PTSConfig config) {
   textOutControl.insertBOM = config.insertBOM;
 }
 
-std::vector<std::string> PdfToString::loadFile(char *fileName) {
+std::vector<std::string> PdfToString::loadFile(const char *fileName) {
   PDFDoc *doc;
   GString *textFileName;
   TextOutputDev *textOut;
@@ -65,14 +65,14 @@ std::vector<std::string> PdfToString::loadFile(char *fileName) {
   std::stringstream *stream = new std::stringstream();
   std::vector<std::string> pages;
 
-  doc = new PDFDoc(fileName);
+  textFileName = new GString(fileName);
+  doc = new PDFDoc(textFileName);
 
   if (!doc->isOk()) {
     goto err2;
   }
 
   // construct text file name
-  textFileName = new GString(fileName);
 
   firstPage = 1;
   lastPage = doc->getNumPages();

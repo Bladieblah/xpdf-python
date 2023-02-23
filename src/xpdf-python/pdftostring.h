@@ -6,6 +6,7 @@
 
 #include "gtypes.h"
 #include "GlobalParams.h"
+#include "TextOutputDev.h"
 
 typedef struct PTSConfig {
   GBool clipText = gFalse;
@@ -21,7 +22,7 @@ class PdfToString {
 public:
     PdfToString(PTSConfig config);
     ~PdfToString();
-    std::vector<std::string> loadFile(char *fileName);
+    std::vector<std::string> loadFile(const char *fileName);
 private:
   TextOutputControl textOutControl;
 };
