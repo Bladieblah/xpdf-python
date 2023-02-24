@@ -8,6 +8,6 @@
 
 // ------------------- Helpers for converting between Python and C++ -------------------
 
-PyObject *vectorStringToList(const std::vector<std::string> &data)
+PyObject *vectorStringToList(const std::vector<std::string> &data);
 
 #endif

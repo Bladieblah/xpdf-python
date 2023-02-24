@@ -5,6 +5,7 @@
 
 #include "Python.h"
 #include "pdftostring.h"
+#include "PyCppConversion.h"
 
 using namespace std;
 
@@ -32,7 +33,8 @@ PyObject *loadFile(PyObject *self, PyObject *args) {
     PdfToString *pts = (PdfToString *)PyCapsule_GetPointer(ptsCapsule, "ptsPtr");
     vector<string> result = pts->loadFile(fileName);
     
-    return Py_BuildValue("O", ptsCapsule);
+    PyObject *converted = vectorStringToList(result);
+    return Py_BuildValue("OO", ptsCapsule, converted);
 }
 
 PyObject *deleteObject(PyObject *self, PyObject *args) {

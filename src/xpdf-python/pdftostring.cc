@@ -66,13 +66,15 @@ std::vector<std::string> PdfToString::loadFile(const char *fileName) {
   std::vector<std::string> pages;
 
   textFileName = new GString(fileName);
-  doc = new PDFDoc(textFileName);
+
+  // Apparently initialising the pdfdoc with a GString is broken when you delete it
+  char *fileNameArray = (char *)malloc((int)strlen(fileName) * sizeof(char));
+  strncpy(fileNameArray, fileName, (int)strlen(fileName));
+  doc = new PDFDoc(fileNameArray);
 
   if (!doc->isOk()) {
     goto err2;
   }
-
-  // construct text file name
 
   firstPage = 1;
   lastPage = doc->getNumPages();

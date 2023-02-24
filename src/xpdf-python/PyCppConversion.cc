@@ -14,7 +14,7 @@ PyObject *vectorStringToList(const vector<string> &data) {
     if (!listObj) throw logic_error("Unable to allocate memory for Python list");
 
     for (int i = 0; i < data.size(); i++) {
-        PyObject *num = PyUnicode_FromStringAndSize(data[i].c_str(), data[i].size());
+        PyObject *num = PyBytes_FromStringAndSize(data[i].c_str(), data[i].size());
 
         if (!num) {
             Py_DECREF(listObj);

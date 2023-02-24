@@ -9,7 +9,7 @@ XPDF_DIR = $(XDIR)xpdf/
 
 OBJDIR = obj/
 
-PY_SRC = $(wildcard $(PYDIR)*.cc)
+PY_SRC = src/xpdf-python/pdftostring.cc
 SPLASH_SRC = $(wildcard $(SPLASH_DIR)*.cc)
 FOFI_SRC = $(wildcard $(FOFI_DIR)*.cc)
 
