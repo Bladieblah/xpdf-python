@@ -27,7 +27,8 @@
 #include "Error.h"
 #include "config.h"
 
-#include "pdftostring.h"
+#include "PdfLoader.h"
+#include "ImageInfoDev.h"
 
 
 static void outputToStringStream(void *stream, const char *text, int len) {
@@ -35,7 +36,7 @@ static void outputToStringStream(void *stream, const char *text, int len) {
 }
 
 
-PdfToString::PdfToString(PTSConfig config) {
+PdfLoader::PdfLoader(LoaderConfig config, const char *fileName) {
   // read config file
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
@@ -54,16 +55,6 @@ PdfToString::PdfToString(PTSConfig config) {
   textOutControl.discardDiagonalText = config.discardDiag;
   textOutControl.discardRotatedText = config.discardRotatedText;
   textOutControl.insertBOM = config.insertBOM;
-}
-
-std::vector<std::string> PdfToString::loadFile(const char *fileName) {
-  PDFDoc *doc;
-  GString *textFileName;
-  TextOutputDev *textOut;
-  int firstPage, lastPage;
-
-  std::stringstream *stream = new std::stringstream();
-  std::vector<std::string> pages;
 
   textFileName = new GString(fileName);
 
@@ -71,9 +62,16 @@ std::vector<std::string> PdfToString::loadFile(const char *fileName) {
   char *fileNameArray = (char *)malloc((int)strlen(fileName) * sizeof(char));
   strncpy(fileNameArray, fileName, (int)strlen(fileName));
   doc = new PDFDoc(fileNameArray);
+}
+
+std::vector<std::string> PdfLoader::extractText() {
+  TextOutputDev *textOut;
+  std::stringstream *stream = new std::stringstream();
+  std::vector<std::string> pages;
+  int firstPage, lastPage;
 
   if (!doc->isOk()) {
-    goto err2;
+    goto err;
   }
 
   firstPage = 1;
@@ -87,43 +85,94 @@ std::vector<std::string> PdfToString::loadFile(const char *fileName) {
       doc->displayPages(textOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
       pages.push_back(stream->str());
     }
-  } else {
-    delete textOut;
-    goto err3;
-  }
-  delete textOut;
+  } 
 
-  // clean up
- err3:
-  delete textFileName;
- err2:
-  delete doc;
+  delete textOut;
+err:
   delete stream;
 
-  // check for memory leaks
   Object::memCheck(stderr);
   gMemReport(stderr);
 
   return pages;
 }
 
-PdfToString::~PdfToString() {
+std::vector<PageImageInfo> PdfLoader::extractImages() {
+  ImageInfoDev *imageOut;
+  int firstPage, lastPage;
+  std::vector<PageImageInfo> pagesInfo;
+
+  if (!doc->isOk()) {
+    goto err;
+  }
+
+  firstPage = 1;
+  lastPage = doc->getNumPages();
+  
+  imageOut = new ImageInfoDev("", gFalse, gFalse, gTrue);
+
+  if (imageOut->isOk()) {
+    for (int page = firstPage; page <= lastPage; page++) {
+      Page *pdfpage = doc->getCatalog()->getPage(page);
+      PDFRectangle *box = pdfpage->getTrimBox();
+      double page_width = box->x2 - box->x1;
+      double page_height = box->y2 - box->y1;
+      
+      doc->displayPages(imageOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
+
+      std::vector<ImageInfo> images(imageOut->images);
+      pagesInfo.push_back((PageImageInfo){
+        page,
+        page_width,
+        page_height,
+        images,
+      });
+
+    }
+  }
+
+  delete imageOut;
+ err:
+  delete textFileName;
+
+  Object::memCheck(stderr);
+  gMemReport(stderr);
+
+  return pagesInfo;
+}
+
+PdfLoader::~PdfLoader() {
   delete globalParams;
+  delete textFileName;
+  delete doc;
+
+  Object::memCheck(stderr);
+  gMemReport(stderr);
 }
 
 
 int main(int argc, char **argv) {
-  PTSConfig config;
+  LoaderConfig config;
 
   if (argc == 2) {
     int i = 0;
-    PdfToString *pts = new PdfToString(config);
-    std::vector<std::string> result = pts->loadFile(argv[1]);
+    PdfLoader *loader = new PdfLoader(config, argv[1]);
+    std::vector<std::string> result = loader->extractText();
 
     for (auto page : result) {
       i++;
       fprintf(stderr, "--------------------------------------- PAGE %d ---------------------------------------\n", i);
       fprintf(stderr, "%s", page.c_str());
+    }
+
+    std::vector<PageImageInfo> pages = loader->extractImages();
+
+    for (auto page : pages) {
+      fprintf(stderr, "Page %d has size (%.2f, %.2f)\n", page.pageNum, page.width, page.height);
+
+      for (auto image : page.images) {
+        fprintf(stderr, "    Image size (%.2f, %.2f)\n", image.width, image.height);
+      }
     }
   }
 
