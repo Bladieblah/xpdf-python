@@ -40,7 +40,7 @@ PyObject *vectorPagesToList(const std::vector<PageImageInfo> &data) {
         PyDict_SetItemString(dictObj, "page_number", PyLong_FromLong((long)data[i].pageNum));
         PyDict_SetItemString(dictObj, "width", PyFloat_FromDouble(data[i].width));
         PyDict_SetItemString(dictObj, "height", PyFloat_FromDouble(data[i].height));
-        PyDict_SetItemString(dictObj, "pages", vectorImagesToList(data[i].images));
+        PyDict_SetItemString(dictObj, "images", vectorImagesToList(data[i].images));
 
         PyList_SET_ITEM(listObj, i, dictObj);
     }
