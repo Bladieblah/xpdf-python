@@ -28,6 +28,7 @@
 #include "config.h"
 
 #include "pdftostring.h"
+#include "ImageInfoDev.h"
 
 
 static void outputToStringStream(void *stream, const char *text, int len) {
@@ -95,6 +96,65 @@ err:
   gMemReport(stderr);
 
   return pages;
+}
+
+std::vector<PageImageInfo> PdfImageInfo::loadFile(const char *fileName) {
+  ImageInfoDev *imageOut;
+  int firstPage, lastPage;
+  std::vector<PageImageInfo> pagesInfo;
+
+  textFileName = new GString(fileName);
+
+  // Apparently initialising the pdfdoc with a GString is broken when you delete it
+  char *fileNameArray = (char *)malloc((int)strlen(fileName) * sizeof(char));
+  strncpy(fileNameArray, fileName, (int)strlen(fileName));
+  doc = new PDFDoc(fileNameArray);
+
+  if (!doc->isOk()) {
+    goto err2;
+  }
+
+  firstPage = 1;
+  lastPage = doc->getNumPages();
+  
+  imageOut = new ImageInfoDev(fileNameArray, gFalse, gFalse, gTrue);
+
+  if (imageOut->isOk()) {
+    for (int page = firstPage; page <= lastPage; page++) {
+      Page *pdfpage = doc->getCatalog()->getPage(page);
+      PDFRectangle *box = pdfpage->getTrimBox();
+      double page_width = box->x2 - box->x1;
+      double page_height = box->y2 - box->y1;
+      
+      doc->displayPages(imageOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
+
+      std::vector<ImageInfo> images(imageOut->images);
+      pagesInfo.push_back((PageImageInfo){
+        page,
+        page_width,
+        page_height,
+        images,
+      });
+
+    }
+  } else {
+    delete imageOut;
+    goto err3;
+  }
+  delete imageOut;
+
+  // clean up
+ err3:
+  delete textFileName;
+ err2:
+  delete doc;
+  // delete stream;
+
+  // check for memory leaks
+  Object::memCheck(stderr);
+  gMemReport(stderr);
+
+  return pagesInfo;
 }
 
 PdfLoader::~PdfLoader() {
