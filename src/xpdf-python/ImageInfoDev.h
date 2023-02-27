@@ -3,9 +3,16 @@
 
 #include <aconf.h>
 
+#include <vector>
+
 #include "gtypes.h"
 #include "OutputDev.h"
 #include "ImageOutputDev.h"
+
+
+typedef struct ImageInfo {
+  double width, height;
+} ImageInfo;
 
 class ImageInfoDev: public ImageOutputDev {
 public:
@@ -17,12 +24,10 @@ public:
     int width, int height, GfxImageColorMap *colorMap,
     int *maskColors, GBool inlineImg, GBool interpolate);
     
-  void printInfo(
-    int width, int height, GfxState *state,
-    GfxImageColorMap *colorMap);
-
+  void addImage(int width, int height, GfxState *state, GfxImageColorMap *colorMap);
 
   int curPageNum;
+  std::vector<ImageInfo> images;
 };
 
 #endif

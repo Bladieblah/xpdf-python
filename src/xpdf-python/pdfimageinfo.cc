@@ -1,5 +1,6 @@
 #include <aconf.h>
 
+#include <cmath>
 #include <sstream>
 #include <stddef.h>
 #include <stdlib.h>
@@ -32,11 +33,12 @@ PdfImageInfo::PdfImageInfo(PIIConfig config) {
   }
 }
 
-void PdfImageInfo::loadFile(const char *fileName) {
+std::vector<PageImageInfo> PdfImageInfo::loadFile(const char *fileName) {
   PDFDoc *doc;
   GString *textFileName;
   ImageInfoDev *imageOut;
   int firstPage, lastPage;
+  std::vector<PageImageInfo> pagesInfo;
 
   textFileName = new GString(fileName);
 
@@ -52,14 +54,25 @@ void PdfImageInfo::loadFile(const char *fileName) {
   firstPage = 1;
   lastPage = doc->getNumPages();
   
-  // textOut = new TextOutputDev(&outputToStringStream, stream, &textOutControl);
   imageOut = new ImageInfoDev(fileNameArray, gFalse, gFalse, gTrue);
 
   if (imageOut->isOk()) {
     for (int page = firstPage; page <= lastPage; page++) {
-      // stream->str("");
+      Page *pdfpage = doc->getCatalog()->getPage(page);
+      PDFRectangle *box = pdfpage->getTrimBox();
+      double page_width = box->x2 - box->x1;
+      double page_height = box->y2 - box->y1;
+      
       doc->displayPages(imageOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
-      // pages.push_back(stream->str());
+
+      std::vector<ImageInfo> images(imageOut->images);
+      pagesInfo.push_back((PageImageInfo){
+        page,
+        page_width,
+        page_height,
+        images,
+      });
+
     }
   } else {
     delete imageOut;
@@ -77,6 +90,8 @@ void PdfImageInfo::loadFile(const char *fileName) {
   // check for memory leaks
   Object::memCheck(stderr);
   gMemReport(stderr);
+
+  return pagesInfo;
 }
 
 PdfImageInfo::~PdfImageInfo() {
@@ -89,9 +104,16 @@ int main(int argc, char **argv) {
   PIIConfig config;
 
   if (argc == 2) {
-    int i = 0;
     PdfImageInfo *pii = new PdfImageInfo(config);
-    pii->loadFile(argv[1]);
+    std::vector<PageImageInfo> pages = pii->loadFile(argv[1]);
+
+    for (auto page : pages) {
+      fprintf(stderr, "Page %d has size (%.2f, %.2f)\n", page.pageNum, page.width, page.height);
+
+      for (auto image : page.images) {
+        fprintf(stderr, "    Image size (%.2f, %.2f)\n", image.width, image.height);
+      }
+    }
   }
 
   return 0;

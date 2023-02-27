@@ -1,5 +1,6 @@
 #include <aconf.h>
 
+#include <math.h>
 #include <sstream>
 #include <stddef.h>
 #include <stdlib.h>
@@ -23,22 +24,22 @@ void ImageInfoDev::drawImage(GfxState *state, Object *ref, Stream *str,
   int *maskColors, GBool inlineImg,
   GBool interpolate
 ) {
-  printInfo(width, height, state, colorMap);
+  addImage(width, height, state, colorMap);
 }
 
-void ImageInfoDev::printInfo(
-  int width, int height, GfxState *state,
-  GfxImageColorMap *colorMap
-) {
+void ImageInfoDev::addImage(int width, int height, GfxState *state, GfxImageColorMap *colorMap) {
   double x0, y0, x1, y1;
 
   state->transformDelta(1, 0, &x0, &y0);
   state->transformDelta(0, 1, &x1, &y1);
 
-  fprintf(stderr, "page=%d width=%d height=%d loc=[(%f, %f), (%f, %f)]\n",
-	 curPageNum, width, height, x0, y0, x1, y1);
+  images.push_back((ImageInfo) {
+      fmax(fabs(x0), fabs(x1)),
+      fmax(fabs(y0), fabs(y1)),
+  });
 }
 
 void ImageInfoDev::startPage(int pageNum, GfxState *state) {
   curPageNum = pageNum;
+  images.clear();
 }
