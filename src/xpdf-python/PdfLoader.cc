@@ -27,7 +27,7 @@
 #include "Error.h"
 #include "config.h"
 
-#include "pdftostring.h"
+#include "PdfLoader.h"
 #include "ImageInfoDev.h"
 
 
@@ -36,7 +36,7 @@ static void outputToStringStream(void *stream, const char *text, int len) {
 }
 
 
-PdfLoader::PdfLoader(PTSConfig config, const char *fileName) {
+PdfLoader::PdfLoader(LoaderConfig config, const char *fileName) {
   // read config file
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
@@ -91,33 +91,25 @@ std::vector<std::string> PdfLoader::extractText() {
 err:
   delete stream;
 
-  // check for memory leaks
   Object::memCheck(stderr);
   gMemReport(stderr);
 
   return pages;
 }
 
-std::vector<PageImageInfo> PdfImageInfo::loadFile(const char *fileName) {
+std::vector<PageImageInfo> PdfLoader::extractImages() {
   ImageInfoDev *imageOut;
   int firstPage, lastPage;
   std::vector<PageImageInfo> pagesInfo;
 
-  textFileName = new GString(fileName);
-
-  // Apparently initialising the pdfdoc with a GString is broken when you delete it
-  char *fileNameArray = (char *)malloc((int)strlen(fileName) * sizeof(char));
-  strncpy(fileNameArray, fileName, (int)strlen(fileName));
-  doc = new PDFDoc(fileNameArray);
-
   if (!doc->isOk()) {
-    goto err2;
+    goto err;
   }
 
   firstPage = 1;
   lastPage = doc->getNumPages();
   
-  imageOut = new ImageInfoDev(fileNameArray, gFalse, gFalse, gTrue);
+  imageOut = new ImageInfoDev("", gFalse, gFalse, gTrue);
 
   if (imageOut->isOk()) {
     for (int page = firstPage; page <= lastPage; page++) {
@@ -137,20 +129,12 @@ std::vector<PageImageInfo> PdfImageInfo::loadFile(const char *fileName) {
       });
 
     }
-  } else {
-    delete imageOut;
-    goto err3;
   }
+
   delete imageOut;
-
-  // clean up
- err3:
+ err:
   delete textFileName;
- err2:
-  delete doc;
-  // delete stream;
 
-  // check for memory leaks
   Object::memCheck(stderr);
   gMemReport(stderr);
 
@@ -168,18 +152,28 @@ PdfLoader::~PdfLoader() {
 
 
 int main(int argc, char **argv) {
-  PTSConfig config;
+  LoaderConfig config;
 
   if (argc == 2) {
     int i = 0;
     PdfLoader *loader = new PdfLoader(config, argv[1]);
     std::vector<std::string> result = loader->extractText();
 
-    for (auto page : result) {
-      i++;
-      fprintf(stderr, "--------------------------------------- PAGE %d ---------------------------------------\n", i);
-      fprintf(stderr, "%s", page.c_str());
-    }
+    // for (auto page : result) {
+    //   i++;
+    //   fprintf(stderr, "--------------------------------------- PAGE %d ---------------------------------------\n", i);
+    //   fprintf(stderr, "%s", page.c_str());
+    // }
+
+    std::vector<PageImageInfo> pages = loader->extractImages();
+
+    // for (auto page : pages) {
+    //   fprintf(stderr, "Page %d has size (%.2f, %.2f)\n", page.pageNum, page.width, page.height);
+
+    //   for (auto image : page.images) {
+    //     fprintf(stderr, "    Image size (%.2f, %.2f)\n", image.width, image.height);
+    //   }
+    // }
   }
 
   return 0;

@@ -12,7 +12,7 @@ using namespace std;
 // ------------------- Class wrappers -------------------
 
 PyObject *construct(PyObject *self, PyObject *args) {
-    PTSConfig config;
+    LoaderConfig config;
     PdfToString *pts = new PdfToString(config);
     
     PyObject *ptsCapsule = PyCapsule_New((void *)pts, "ptsPtr", NULL);

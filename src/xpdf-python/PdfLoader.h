@@ -6,9 +6,12 @@
 
 #include "gtypes.h"
 #include "GlobalParams.h"
+#include "PDFDoc.h"
 #include "TextOutputDev.h"
 
-typedef struct PTSConfig {
+#include "ImageInfoDev.h"
+
+typedef struct LoaderConfig {
   GBool clipText = gFalse;
   GBool discardDiag = gTrue;
   GBool discardRotatedText = gTrue;
@@ -16,13 +19,20 @@ typedef struct PTSConfig {
   GBool insertBOM = gFalse;
   GBool verbose = gFalse;
   GBool quiet = gFalse;
-} PTSConfig;
+} LoaderConfig;
+
+typedef struct PageImageInfo {
+  int pageNum;
+  double width, height;
+  std::vector<ImageInfo> images;
+} PageImageInfo;
 
 class PdfLoader {
 public:
-    PdfLoader(PTSConfig config, const char *fileName);
+    PdfLoader(LoaderConfig config, const char *fileName);
     ~PdfLoader();
     std::vector<std::string> extractText();
+    std::vector<PageImageInfo> extractImages();
 private:
   TextOutputControl textOutControl;
   PDFDoc *doc;
