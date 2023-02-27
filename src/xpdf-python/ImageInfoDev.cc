@@ -24,10 +24,17 @@ void ImageInfoDev::drawImage(GfxState *state, Object *ref, Stream *str,
   int *maskColors, GBool inlineImg,
   GBool interpolate
 ) {
-  addImage(width, height, state, colorMap);
+  addImage(width, height, state);
 }
 
-void ImageInfoDev::addImage(int width, int height, GfxState *state, GfxImageColorMap *colorMap) {
+void ImageInfoDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
+    int width, int height, GBool invert,
+    GBool inlineImg, GBool interpolate
+) {
+  addImage(width, height, state);
+}
+
+void ImageInfoDev::addImage(int width, int height, GfxState *state) {
   double x0, y0, x1, y1;
 
   state->transformDelta(1, 0, &x0, &y0);
