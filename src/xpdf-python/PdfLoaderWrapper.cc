@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Python.h"
-#include "pdftostring.h"
+#include "PdfLoader.h"
 #include "PyCppConversion.h"
 
 using namespace std;
@@ -12,38 +12,40 @@ using namespace std;
 // ------------------- Class wrappers -------------------
 
 PyObject *construct(PyObject *self, PyObject *args) {
+    PyObject *pobj0;
+    Py_ssize_t size;
+    PyArg_ParseTuple(args, "O", &pobj0);
+    const char *fileName = PyUnicode_AsUTF8AndSize(pobj0, &size);
+    
     LoaderConfig config;
-    PdfToString *pts = new PdfToString(config);
+    PdfLoader *loader = new PdfLoader(config, fileName);
     
-    PyObject *ptsCapsule = PyCapsule_New((void *)pts, "ptsPtr", NULL);
-    PyCapsule_SetPointer(ptsCapsule, (void *)pts);
+    PyObject *loaderCapsule = PyCapsule_New((void *)loader, "loaderPtr", NULL);
+    PyCapsule_SetPointer(loaderCapsule, (void *)loader);
     
-    return Py_BuildValue("O", ptsCapsule);
+    return Py_BuildValue("O", loaderCapsule);
 }
 
-PyObject *loadFile(PyObject *self, PyObject *args) {
-    PyObject *pobj0;
+PyObject *extractText(PyObject *self, PyObject *args) {
     vector<string> res;
-    Py_ssize_t size;
     
-    PyObject *ptsCapsule;
-    PyArg_ParseTuple(args, "OO", &ptsCapsule, &pobj0);
-    const char *fileName = PyUnicode_AsUTF8AndSize(pobj0, &size);
+    PyObject *loaderCapsule;
+    PyArg_ParseTuple(args, "O", &loaderCapsule);
 
-    PdfToString *pts = (PdfToString *)PyCapsule_GetPointer(ptsCapsule, "ptsPtr");
-    vector<string> result = pts->loadFile(fileName);
+    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
+    vector<string> result = loader->extractText();
     
     PyObject *converted = vectorStringToList(result);
-    return Py_BuildValue("OO", ptsCapsule, converted);
+    return Py_BuildValue("OO", loaderCapsule, converted);
 }
 
 PyObject *deleteObject(PyObject *self, PyObject *args) {
-    PyObject *ptsCapsule;
-    PyArg_ParseTuple(args, "O", &ptsCapsule);
+    PyObject *loaderCapsule;
+    PyArg_ParseTuple(args, "O", &loaderCapsule);
     
-    PdfToString *pts = (PdfToString *)PyCapsule_GetPointer(ptsCapsule, "ptsPtr");
+    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
     
-    delete pts;
+    delete loader;
     
     return Py_BuildValue("");
 }
@@ -51,15 +53,15 @@ PyObject *deleteObject(PyObject *self, PyObject *args) {
 PyMethodDef cXpdfPythonFunctions[] = {
     {"construct",
       construct, METH_VARARGS,
-     "Create `PdfToString` object"},
+     "Create `PdfLoader` object"},
     
-    {"loadFile",
-      loadFile, METH_VARARGS,
+    {"extractText",
+      extractText, METH_VARARGS,
      "Fit the classifier"},
     
     {"deleteObject",
       deleteObject, METH_VARARGS,
-     "Delete `PdfToString` object"},
+     "Delete `PdfLoader` object"},
 
     {NULL, NULL, 0, NULL}      // Last function description must be empty.
                                // Otherwise, it will create seg fault while
