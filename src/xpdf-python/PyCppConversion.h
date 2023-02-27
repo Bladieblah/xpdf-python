@@ -6,8 +6,14 @@
 
 #include "Python.h"
 
+#include "PdfLoader.h"
+
 // ------------------- Helpers for converting between Python and C++ -------------------
 
 PyObject *vectorStringToList(const std::vector<std::string> &data);
+
+PyObject *vectorPagesToList(const std::vector<PageImageInfo> &data);
+
+PyObject *vectorImagesToList(const std::vector<ImageInfo> &data);
 
 #endif

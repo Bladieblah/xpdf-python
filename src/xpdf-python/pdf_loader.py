@@ -1,4 +1,5 @@
-from typing import List
+import json
+from typing import Any, Dict, List
 import cXpdfPython
 
 class PdfLoader:
@@ -17,6 +18,11 @@ class PdfLoader:
         pages: List[bytes] = self.extract_bytes()
         return [page.decode('unicode_escape', 'replace') for page in pages]
 
+    def extract_images(self):
+        images: List[Dict[str, Any]]
+        self.pts_capsule, images = cXpdfPython.extractImages(self.pts_capsule)
+        return images
+
     def __delete__(self):
         cTokenizer.deleteObject(self.tokenizer_capsule)
 
@@ -29,3 +35,6 @@ if __name__ == "__main__":
     for i, page in enumerate(result):
         print("----------------------------------------------------- %d -----------------------------------------------------" % (i))
         print(page)
+    
+    pages = loader.extract_images()
+    print(json.dumps(pages, indent=4))
