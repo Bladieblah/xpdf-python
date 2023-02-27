@@ -1,28 +1,21 @@
-#ifndef PDF_IMAGE_INFO_H
-#define PDF_IMAGE_INFO_H
+#ifndef PDFTOSTRING_H
+#define PDFTOSTRING_H
 
-#include <aconf.h>
 
 #include "gtypes.h"
-#include "OutputDev.h"
-#include "ImageOutputDev.h"
+#include "GlobalParams.h"
+#include "TextOutputDev.h"
 
-class ImageInfoDev: public ImageOutputDev {
+typedef struct PIIConfig {
+  GBool verbose = gFalse;
+  GBool quiet = gFalse;
+} PIIConfig;
+
+class PdfImageInfo {
 public:
-  ImageInfoDev(char *fileRootA, GBool dumpJPEGA, GBool dumpRawA,
-		 GBool listA) : ImageOutputDev(fileRootA, dumpJPEGA, dumpRawA, listA) {};
-
-  virtual void startPage(int pageNum, GfxState *state);
-  virtual void drawImage(GfxState *state, Object *ref, Stream *str,
-    int width, int height, GfxImageColorMap *colorMap,
-    int *maskColors, GBool inlineImg, GBool interpolate);
-    
-  void printInfo(
-    int width, int height, GfxState *state,
-    GfxImageColorMap *colorMap);
-
-
-  int curPageNum;
+    PdfImageInfo(PIIConfig config);
+    ~PdfImageInfo();
+    void loadFile(const char *fileName);
 };
 
 #endif

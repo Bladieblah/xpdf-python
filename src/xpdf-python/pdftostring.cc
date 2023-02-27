@@ -112,20 +112,20 @@ PdfToString::~PdfToString() {
 }
 
 
-// int main(int argc, char **argv) {
-//   PTSConfig config;
+int main(int argc, char **argv) {
+  PTSConfig config;
 
-//   if (argc == 2) {
-//     int i = 0;
-//     PdfToString *pts = new PdfToString(config);
-//     std::vector<std::string> result = pts->loadFile(argv[1]);
+  if (argc == 2) {
+    int i = 0;
+    PdfToString *pts = new PdfToString(config);
+    std::vector<std::string> result = pts->loadFile(argv[1]);
 
-//     for (auto page : result) {
-//       i++;
-//       // fprintf(stderr, "--------------------------------------- PAGE %d ---------------------------------------\n", i);
-//       // fprintf(stderr, "%s", page.c_str());
-//     }
-//   }
+    for (auto page : result) {
+      i++;
+      // fprintf(stderr, "--------------------------------------- PAGE %d ---------------------------------------\n", i);
+      // fprintf(stderr, "%s", page.c_str());
+    }
+  }
 
-//   return 0;
-// }
+  return 0;
+}

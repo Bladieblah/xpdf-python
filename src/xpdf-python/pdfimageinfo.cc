@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "GlobalParams.h"
 #include "gmem.h"
 #include "gmempp.h"
 #include "config.h"
@@ -12,39 +13,30 @@
 #include "Object.h"
 #include "PDFDoc.h"
 #include "Stream.h"
+
+#include "ImageInfoDev.h"
 #include "pdfimageinfo.h"
 
+PdfImageInfo::PdfImageInfo(PIIConfig config) {
+  // read config file
+  if (globalParams == NULL) {
+    globalParams = new GlobalParams("");
+  }
 
-void ImageInfoDev::drawImage(GfxState *state, Object *ref, Stream *str,
-  int width, int height,
-  GfxImageColorMap *colorMap,
-  int *maskColors, GBool inlineImg,
-  GBool interpolate
-) {
-  int size, n, i, j;
+  if (config.verbose) {
+    globalParams->setPrintStatusInfo(config.verbose);
+  }
 
-  printInfo(width, height, state, colorMap);
+  if (config.quiet) {
+    globalParams->setErrQuiet(config.quiet);
+  }
 }
 
-void ImageInfoDev::printInfo(
-  int width, int height, GfxState *state,
-  GfxImageColorMap *colorMap
-) {
-
-}
-
-void ImageInfoDev::startPage(int pageNum, GfxState *state) {
-  curPageNum = pageNum;
-}
-
-void loadFile(const char *fileName) {
+void PdfImageInfo::loadFile(const char *fileName) {
   PDFDoc *doc;
   GString *textFileName;
   ImageInfoDev *imageOut;
   int firstPage, lastPage;
-
-  // std::stringstream *stream = new std::stringstream();
-  // std::vector<std::string> pages;
 
   textFileName = new GString(fileName);
 
@@ -87,11 +79,19 @@ void loadFile(const char *fileName) {
   gMemReport(stderr);
 }
 
+PdfImageInfo::~PdfImageInfo() {
+  delete globalParams;
+}
+
 
 
 int main(int argc, char **argv) {
+  PIIConfig config;
+
   if (argc == 2) {
-    loadFile(argv[1]);
+    int i = 0;
+    PdfImageInfo *pii = new PdfImageInfo(config);
+    pii->loadFile(argv[1]);
   }
 
   return 0;
