@@ -18,13 +18,15 @@ typedef struct PTSConfig {
   GBool quiet = gFalse;
 } PTSConfig;
 
-class PdfToString {
+class PdfLoader {
 public:
-    PdfToString(PTSConfig config);
-    ~PdfToString();
-    std::vector<std::string> loadFile(const char *fileName);
+    PdfLoader(PTSConfig config, const char *fileName);
+    ~PdfLoader();
+    std::vector<std::string> extractText();
 private:
   TextOutputControl textOutControl;
+  PDFDoc *doc;
+  GString *textFileName;
 };
 
 #endif

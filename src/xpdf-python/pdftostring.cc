@@ -35,7 +35,7 @@ static void outputToStringStream(void *stream, const char *text, int len) {
 }
 
 
-PdfToString::PdfToString(PTSConfig config) {
+PdfLoader::PdfLoader(PTSConfig config, const char *fileName) {
   // read config file
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
@@ -54,16 +54,6 @@ PdfToString::PdfToString(PTSConfig config) {
   textOutControl.discardDiagonalText = config.discardDiag;
   textOutControl.discardRotatedText = config.discardRotatedText;
   textOutControl.insertBOM = config.insertBOM;
-}
-
-std::vector<std::string> PdfToString::loadFile(const char *fileName) {
-  PDFDoc *doc;
-  GString *textFileName;
-  TextOutputDev *textOut;
-  int firstPage, lastPage;
-
-  std::stringstream *stream = new std::stringstream();
-  std::vector<std::string> pages;
 
   textFileName = new GString(fileName);
 
@@ -71,9 +61,16 @@ std::vector<std::string> PdfToString::loadFile(const char *fileName) {
   char *fileNameArray = (char *)malloc((int)strlen(fileName) * sizeof(char));
   strncpy(fileNameArray, fileName, (int)strlen(fileName));
   doc = new PDFDoc(fileNameArray);
+}
+
+std::vector<std::string> PdfLoader::extractText() {
+  TextOutputDev *textOut;
+  std::stringstream *stream = new std::stringstream();
+  std::vector<std::string> pages;
+  int firstPage, lastPage;
 
   if (!doc->isOk()) {
-    goto err2;
+    goto err;
   }
 
   firstPage = 1;
@@ -87,17 +84,10 @@ std::vector<std::string> PdfToString::loadFile(const char *fileName) {
       doc->displayPages(textOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
       pages.push_back(stream->str());
     }
-  } else {
-    delete textOut;
-    goto err3;
-  }
-  delete textOut;
+  } 
 
-  // clean up
- err3:
-  delete textFileName;
- err2:
-  delete doc;
+  delete textOut;
+err:
   delete stream;
 
   // check for memory leaks
@@ -107,8 +97,13 @@ std::vector<std::string> PdfToString::loadFile(const char *fileName) {
   return pages;
 }
 
-PdfToString::~PdfToString() {
+PdfLoader::~PdfLoader() {
   delete globalParams;
+  delete textFileName;
+  delete doc;
+
+  Object::memCheck(stderr);
+  gMemReport(stderr);
 }
 
 
@@ -117,13 +112,13 @@ int main(int argc, char **argv) {
 
   if (argc == 2) {
     int i = 0;
-    PdfToString *pts = new PdfToString(config);
-    std::vector<std::string> result = pts->loadFile(argv[1]);
+    PdfLoader *loader = new PdfLoader(config, argv[1]);
+    std::vector<std::string> result = loader->extractText();
 
     for (auto page : result) {
       i++;
-      // fprintf(stderr, "--------------------------------------- PAGE %d ---------------------------------------\n", i);
-      // fprintf(stderr, "%s", page.c_str());
+      fprintf(stderr, "--------------------------------------- PAGE %d ---------------------------------------\n", i);
+      fprintf(stderr, "%s", page.c_str());
     }
   }
 
