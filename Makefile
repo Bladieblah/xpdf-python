@@ -13,7 +13,52 @@ PY_SRC = src/xpdf-python/pdfimageinfo.cc
 SPLASH_SRC = $(wildcard $(SPLASH_DIR)*.cc)
 FOFI_SRC = $(wildcard $(FOFI_DIR)*.cc)
 
-XPDF_FILES = GlobalParams.cc Object.cc Stream.cc Array.cc Dict.cc XRef.cc Catalog.cc Page.cc PDFDoc.cc TextOutputDev.cc UnicodeMap.cc TextString.cc Error.cc UTF8.cc UnicodeTypeTable.cc BuiltinFontTables.cc JBIG2Stream.cc NameToCharCode.cc OptionalContent.cc SecurityHandler.cc UnicodeRemapping.cc BuiltinFont.cc CharCodeToUnicode.cc Gfx.cc GfxState.cc GfxFont.cc Annot.cc Lexer.cc Link.cc Parser.cc PSTokenizer.cc JArithmeticDecoder.cc Decrypt.cc AcroForm.cc Outline.cc Function.cc CMap.cc JPXStream.cc OutputDev.cc PDF417Barcode.cc XFAScanner.cc FontEncodingTables.cc Zoox.cc PDFDocEncoding.cc
+XPDF_FILES = AcroForm.cc \
+Array.cc \
+Stream.cc \
+Annot.cc \
+BuiltinFont.cc \
+BuiltinFontTables.cc \
+Catalog.cc \
+CharCodeToUnicode.cc \
+CMap.cc \
+Decrypt.cc \
+Dict.cc \
+Error.cc \
+FontEncodingTables.cc \
+Function.cc \
+Gfx.cc \
+GfxFont.cc \
+GfxState.cc \
+GlobalParams.cc \
+ImageOutputDev.cc \
+JArithmeticDecoder.cc \
+JBIG2Stream.cc \
+JPXStream.cc \
+Lexer.cc \
+Link.cc \
+NameToCharCode.cc \
+Object.cc \
+OptionalContent.cc \
+Outline.cc \
+OutputDev.cc \
+Page.cc \
+Parser.cc \
+PDF417Barcode.cc \
+PDFDoc.cc \
+PDFDocEncoding.cc \
+PSTokenizer.cc \
+SecurityHandler.cc \
+TextOutputDev.cc \
+TextString.cc \
+UnicodeMap.cc \
+UnicodeRemapping.cc \
+UnicodeTypeTable.cc \
+UTF8.cc \
+XFAScanner.cc \
+XRef.cc \
+Zoox.cc
+
 GOO_FILES = gmem.cc gmempp.cc gfile.cc GHash.cc GList.cc GString.cc
 
 XPDF_SRC = $(XPDF_FILES:%.cc=$(XDIR)/xpdf/%.cc)
