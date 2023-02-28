@@ -18,7 +18,7 @@ typedef struct LoaderConfig {
   GBool noPageBreaks = gFalse;
   GBool insertBOM = gFalse;
   GBool verbose = gFalse;
-  GBool quiet = gFalse;
+  GBool quiet = gTrue;
 } LoaderConfig;
 
 typedef struct PageImageInfo {
