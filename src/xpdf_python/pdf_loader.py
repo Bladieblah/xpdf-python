@@ -1,14 +1,19 @@
 from typing import List, TypedDict
+
 import cXpdfPython
+
 
 class ImageInfo(TypedDict):
     width: float
     height: float
+
+
 class PageInfo(TypedDict):
     page_number: int
     width: float
     height: float
     images: List[ImageInfo]
+
 
 class PdfLoader:
     filename: str
@@ -24,7 +29,7 @@ class PdfLoader:
 
     def extract_strings(self):
         pages: List[bytes] = self.extract_bytes()
-        return [page.decode('unicode_escape', 'replace') for page in pages]
+        return [page.decode("unicode_escape", "replace") for page in pages]
 
     def extract_images(self):
         images: List[PageInfo]
