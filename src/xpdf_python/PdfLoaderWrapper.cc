@@ -36,7 +36,7 @@ PyObject *extractText(PyObject *self, PyObject *args) {
     vector<string> result = loader->extractText();
     
     PyObject *converted = vectorStringToList(result);
-    return Py_BuildValue("OO", loaderCapsule, converted);
+    return Py_BuildValue("O", converted);
 }
 
 PyObject *extractImages(PyObject *self, PyObject *args) {
@@ -49,7 +49,7 @@ PyObject *extractImages(PyObject *self, PyObject *args) {
     vector<PageImageInfo> result = loader->extractImages();
     
     PyObject *converted = vectorPagesToList(result);
-    return Py_BuildValue("OO", loaderCapsule, converted);
+    return Py_BuildValue("O", converted);
 }
 
 PyObject *deleteObject(PyObject *self, PyObject *args) {
