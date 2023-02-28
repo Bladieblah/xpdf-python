@@ -133,7 +133,6 @@ std::vector<PageImageInfo> PdfLoader::extractImages() {
 
   delete imageOut;
  err:
-  delete textFileName;
 
   Object::memCheck(stderr);
   gMemReport(stderr);
@@ -158,6 +157,7 @@ int main(int argc, char **argv) {
     int i = 0;
     PdfLoader *loader = new PdfLoader(config, argv[1]);
     std::vector<std::string> result = loader->extractText();
+    result = loader->extractText();
 
     for (auto page : result) {
       i++;
@@ -166,6 +166,7 @@ int main(int argc, char **argv) {
     }
 
     std::vector<PageImageInfo> pages = loader->extractImages();
+    pages = loader->extractImages();
 
     for (auto page : pages) {
       fprintf(stderr, "Page %d has size (%.2f, %.2f)\n", page.pageNum, page.width, page.height);

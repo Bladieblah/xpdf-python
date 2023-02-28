@@ -2,8 +2,7 @@ from glob import glob
 from pathlib import Path
 from setuptools import Extension, setup
 
-
-python_dir = Path('src/xpdf-python')
+python_dir = Path('src/xpdf_python')
 xpdf_dir = Path('src/xpdf-4.04/xpdf')
 splash_dir = Path('src/xpdf-4.04/splash')
 fofi_dir = Path('src/xpdf-4.04/fofi')

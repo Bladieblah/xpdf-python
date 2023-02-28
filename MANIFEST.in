@@ -1,2 +1,2 @@
-include src/xpdf-python/*
+include src/xpdf_python/*
 include src/xpdf-4.04/*
