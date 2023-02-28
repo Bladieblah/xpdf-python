@@ -1,4 +1,3 @@
-import json
 from typing import List, TypedDict
 import cXpdfPython
 
@@ -34,16 +33,3 @@ class PdfLoader:
 
     def __delete__(self):
         cXpdfPython.deleteObject(self.capsule)
-
-if __name__ == "__main__":
-    path = "../NL-PDF-Extractietool/data/input/9999748983.pdf"
-    loader = PdfLoader(path)
-    result = loader.extract_strings()
-    print(len(result))
-
-    for i, page in enumerate(result):
-        print("----------------------------------------------------- %d -----------------------------------------------------" % (i))
-        print(page)
-    
-    pages = loader.extract_images()
-    print(json.dumps(pages, indent=4))
