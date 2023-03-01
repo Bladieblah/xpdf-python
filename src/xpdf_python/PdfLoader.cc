@@ -36,7 +36,7 @@ static void outputToStringStream(void *stream, const char *text, int len) {
 }
 
 
-PdfLoader::PdfLoader(LoaderConfig config, const char *fileName) {
+PdfLoader::PdfLoader(LoaderConfig config, char *fileName) {
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
   }
@@ -51,11 +51,7 @@ PdfLoader::PdfLoader(LoaderConfig config, const char *fileName) {
   textOutControl.insertBOM = config.insertBOM;
 
   textFileName = new GString(fileName);
-
-  // Apparently initialising the pdfdoc with a GString is broken when you delete it
-  char *fileNameArray = (char *)malloc((int)strlen(fileName) * sizeof(char));
-  strncpy(fileNameArray, fileName, (int)strlen(fileName));
-  doc = new PDFDoc(fileNameArray);
+  doc = new PDFDoc(fileName);
 }
 
 PdfLoader::~PdfLoader() {

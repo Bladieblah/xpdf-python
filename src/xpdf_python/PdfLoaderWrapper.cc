@@ -26,7 +26,8 @@ PyObject *construct(PyObject *self, PyObject *args) {
         &(config.quiet)
     );
     
-    const char *fileName = PyUnicode_AsUTF8AndSize(pobj0, &size);
+    char *fileName = (char *)PyUnicode_AsUTF8AndSize(pobj0, &size);
+    fprintf(stderr, "Constructing filename %s\n", fileName);
     
     PdfLoader *loader = new PdfLoader(config, fileName);
 
