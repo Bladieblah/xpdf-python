@@ -18,9 +18,28 @@ class PageInfo(TypedDict):
 class PdfLoader:
     filename: str
 
-    def __init__(self, filename: str):
+    def __init__(
+        self, 
+        filename: str,
+        cliptext: bool = False,
+        discard_diag: bool = True,
+        discard_rotated_text: bool = True,
+        no_page_breaks: bool = False,
+        insert_bom: bool = False,
+        verbose: bool = False,
+        quiet: bool = True,
+    ):
         self.filename = filename
-        self.capsule = cXpdfPython.construct(filename)
+        self.capsule = cXpdfPython.construct(
+            filename,
+            cliptext,
+            discard_diag,
+            discard_rotated_text,
+            no_page_breaks,
+            insert_bom,
+            verbose,
+            quiet
+        )
 
     def extract_bytes(self):
         pages: List[bytes]

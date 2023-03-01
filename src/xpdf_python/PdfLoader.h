@@ -33,6 +33,7 @@ public:
     ~PdfLoader();
     std::vector<std::string> extractText();
     std::vector<PageImageInfo> extractImages();
+    bool isOk();
 private:
   TextOutputControl textOutControl;
   PDFDoc *doc;

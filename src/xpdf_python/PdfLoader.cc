@@ -37,18 +37,12 @@ static void outputToStringStream(void *stream, const char *text, int len) {
 
 
 PdfLoader::PdfLoader(LoaderConfig config, const char *fileName) {
-  // read config file
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
   }
 
-  if (config.verbose) {
-    globalParams->setPrintStatusInfo(config.verbose);
-  }
-
-  if (config.quiet) {
-    globalParams->setErrQuiet(config.quiet);
-  }
+  globalParams->setPrintStatusInfo(config.verbose);
+  globalParams->setErrQuiet(config.quiet);
 
   textOutControl.mode = textOutTableLayout;
   textOutControl.clipText = config.clipText;
@@ -62,6 +56,15 @@ PdfLoader::PdfLoader(LoaderConfig config, const char *fileName) {
   char *fileNameArray = (char *)malloc((int)strlen(fileName) * sizeof(char));
   strncpy(fileNameArray, fileName, (int)strlen(fileName));
   doc = new PDFDoc(fileNameArray);
+}
+
+PdfLoader::~PdfLoader() {
+  delete globalParams;
+  delete textFileName;
+  delete doc;
+
+  Object::memCheck(stderr);
+  gMemReport(stderr);
 }
 
 std::vector<std::string> PdfLoader::extractText() {
@@ -140,13 +143,12 @@ std::vector<PageImageInfo> PdfLoader::extractImages() {
   return pagesInfo;
 }
 
-PdfLoader::~PdfLoader() {
-  delete globalParams;
-  delete textFileName;
-  delete doc;
+bool PdfLoader::isOk() {
+  if (!doc) {
+    return false;
+  }
 
-  Object::memCheck(stderr);
-  gMemReport(stderr);
+  return (bool)doc->isOk();
 }
 
 
@@ -169,10 +171,10 @@ int main(int argc, char **argv) {
     pages = loader->extractImages();
 
     for (auto page : pages) {
-      fprintf(stderr, "Page %d has size (%.2f, %.2f)\n", page.pageNum, page.width, page.height);
+      // fprintf(stderr, "Page %d has size (%.2f, %.2f)\n", page.pageNum, page.width, page.height);
 
       for (auto image : page.images) {
-        fprintf(stderr, "    Image size (%.2f, %.2f)\n", image.width, image.height);
+        // fprintf(stderr, "    Image size (%.2f, %.2f)\n", image.width, image.height);
       }
     }
   }

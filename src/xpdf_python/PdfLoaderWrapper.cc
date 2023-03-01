@@ -14,11 +14,27 @@ using namespace std;
 PyObject *construct(PyObject *self, PyObject *args) {
     PyObject *pobj0;
     Py_ssize_t size;
-    PyArg_ParseTuple(args, "O", &pobj0);
+    LoaderConfig config;
+
+    PyArg_ParseTuple(args, "Oppppppp", &pobj0,
+        &(config.clipText),
+        &(config.discardDiag),
+        &(config.discardRotatedText),
+        &(config.noPageBreaks),
+        &(config.insertBOM),
+        &(config.verbose),
+        &(config.quiet)
+    );
+    
     const char *fileName = PyUnicode_AsUTF8AndSize(pobj0, &size);
     
-    LoaderConfig config;
     PdfLoader *loader = new PdfLoader(config, fileName);
+
+    if (!loader->isOk()) {
+        char message[1000] = "";
+        sprintf(message, "Error loading file %s", fileName);
+        PyErr_SetString(PyExc_FileNotFoundError, message);
+    }
     
     PyObject *loaderCapsule = PyCapsule_New((void *)loader, "loaderPtr", NULL);
     PyCapsule_SetPointer(loaderCapsule, (void *)loader);

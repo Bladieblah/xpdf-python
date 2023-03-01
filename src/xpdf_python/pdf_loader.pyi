@@ -15,7 +15,17 @@ class PageInfo(TypedDict):
 class PdfLoader:
     filename: str
     capsule: XpdfPythonCapsule
-    def __init__(self, filename: str) -> None: ...
+    def __init__(
+        self, 
+        filename: str,
+        cliptext: bool,
+        discard_diag: bool,
+        discard_rotated_text: bool,
+        no_page_breaks: bool,
+        insert_bom: bool,
+        verbose: bool,
+        quiet: bool
+    ) -> None: ...
     def extract_bytes(self) -> List[bytes]: ...
     def extract_strings(self) -> List[str]: ...
     def extract_images(self) -> List[PageInfo]: ...
