@@ -55,7 +55,6 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName) {
 }
 
 PdfLoader::~PdfLoader() {
-  delete globalParams;
   delete textFileName;
   delete doc;
 
