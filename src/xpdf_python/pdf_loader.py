@@ -55,5 +55,5 @@ class PdfLoader:
         images = cXpdfPython.extractImages(self.capsule)
         return images
 
-    def __delete__(self):
+    def __del__(self):
         cXpdfPython.deleteObject(self.capsule)

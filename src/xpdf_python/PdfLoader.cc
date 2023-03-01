@@ -154,6 +154,8 @@ int main(int argc, char **argv) {
   if (argc == 2) {
     int i = 0;
     PdfLoader *loader = new PdfLoader(config, argv[1]);
+    delete loader;
+    loader = new PdfLoader(config, argv[1]);
     std::vector<std::string> result = loader->extractText();
     result = loader->extractText();
 
