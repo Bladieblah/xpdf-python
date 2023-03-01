@@ -18,13 +18,13 @@ class PdfLoader:
     def __init__(
         self, 
         filename: str,
-        cliptext: bool,
-        discard_diag: bool,
-        discard_rotated_text: bool,
-        no_page_breaks: bool,
-        insert_bom: bool,
-        verbose: bool,
-        quiet: bool
+        cliptext: bool = False,
+        discard_diag: bool = True,
+        discard_rotated_text: bool = True,
+        no_page_breaks: bool = False,
+        insert_bom: bool = False,
+        verbose: bool = False,
+        quiet: bool = True,
     ) -> None: ...
     def extract_bytes(self) -> List[bytes]: ...
     def extract_strings(self) -> List[str]: ...
