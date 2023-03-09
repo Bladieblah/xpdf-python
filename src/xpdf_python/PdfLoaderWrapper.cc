@@ -34,6 +34,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
         char message[1000] = "";
         sprintf(message, "Error loading file %s", fileName);
         PyErr_SetString(PyExc_FileNotFoundError, message);
+        return NULL;
     }
     
     PyObject *loaderCapsule = PyCapsule_New((void *)loader, "loaderPtr", NULL);
