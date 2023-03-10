@@ -2,7 +2,6 @@ from typing import List, TypedDict
 
 import cXpdfPython
 
-
 class ImageInfo(TypedDict):
     width: float
     height: float
@@ -17,6 +16,7 @@ class PageInfo(TypedDict):
 
 class PdfLoader:
     filename: str
+    capsule = None
 
     def __init__(
         self, 
@@ -42,8 +42,10 @@ class PdfLoader:
         )
 
     def extract_bytes(self):
-        pages: List[bytes]
-        pages = cXpdfPython.extractText(self.capsule)
+        pages: List[bytes] = []
+        if self.capsule is not None:
+            pages = cXpdfPython.extractText(self.capsule)
+        
         return pages
 
     def extract_strings(self):
@@ -51,9 +53,12 @@ class PdfLoader:
         return [page.decode("unicode_escape", "replace") for page in pages]
 
     def extract_images(self):
-        images: List[PageInfo]
-        images = cXpdfPython.extractImages(self.capsule)
+        images: List[PageInfo] = []
+        if self.capsule is not None:
+            images = cXpdfPython.extractImages(self.capsule)
+        
         return images
 
     def __del__(self):
-        cXpdfPython.deleteObject(self.capsule)
+        if self.capsule:
+            cXpdfPython.deleteObject(self.capsule)

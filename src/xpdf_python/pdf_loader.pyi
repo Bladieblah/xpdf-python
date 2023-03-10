@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 
 class XpdfPythonCapsule: ...
 
@@ -14,7 +14,8 @@ class PageInfo(TypedDict):
 
 class PdfLoader:
     filename: str
-    capsule: XpdfPythonCapsule
+    capsule: Optional[XpdfPythonCapsule] = None
+
     def __init__(
         self, 
         filename: str,
