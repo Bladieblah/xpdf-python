@@ -30,7 +30,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
 
     if (!loader->isOk()) {
         char message[1000] = "";
-        sprintf(message, "Error loading file %s", fileName);
+        snprintf(message, 1000, "Error loading file %s", fileName);
         PyErr_SetString(PyExc_IOError, message);
         return NULL;
     }

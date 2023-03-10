@@ -99,6 +99,7 @@ std::vector<PageImageInfo> PdfLoader::extractImages() {
   ImageInfoDev *imageOut;
   int firstPage, lastPage;
   std::vector<PageImageInfo> pagesInfo;
+  char dummyFile[1] = "";
 
   if (!doc->isOk()) {
     goto err;
@@ -107,7 +108,7 @@ std::vector<PageImageInfo> PdfLoader::extractImages() {
   firstPage = 1;
   lastPage = doc->getNumPages();
   
-  imageOut = new ImageInfoDev("", gFalse, gFalse, gTrue);
+  imageOut = new ImageInfoDev(dummyFile, gFalse, gFalse, gTrue);
 
   if (imageOut->isOk()) {
     for (int page = firstPage; page <= lastPage; page++) {
@@ -144,37 +145,4 @@ bool PdfLoader::isOk() {
   }
 
   return (bool)doc->isOk();
-}
-
-
-int main(int argc, char **argv) {
-  LoaderConfig config;
-
-  if (argc == 2) {
-    int i = 0;
-    PdfLoader *loader = new PdfLoader(config, argv[1]);
-    delete loader;
-    loader = new PdfLoader(config, argv[1]);
-    std::vector<std::string> result = loader->extractText();
-    result = loader->extractText();
-
-    for (auto page : result) {
-      i++;
-      fprintf(stderr, "--------------------------------------- PAGE %d ---------------------------------------\n", i);
-      fprintf(stderr, "%s", page.c_str());
-    }
-
-    std::vector<PageImageInfo> pages = loader->extractImages();
-    pages = loader->extractImages();
-
-    for (auto page : pages) {
-      // fprintf(stderr, "Page %d has size (%.2f, %.2f)\n", page.pageNum, page.width, page.height);
-
-      for (auto image : page.images) {
-        // fprintf(stderr, "    Image size (%.2f, %.2f)\n", image.width, image.height);
-      }
-    }
-  }
-
-  return 0;
 }

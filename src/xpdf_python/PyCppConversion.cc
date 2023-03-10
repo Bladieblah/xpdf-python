@@ -15,7 +15,7 @@ PyObject *vectorStringToList(const vector<string> &data) {
     PyObject *listObj = PyList_New(data.size());
     if (!listObj) throw logic_error("Unable to allocate memory for Python list");
 
-    for (int i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         PyObject *num = PyBytes_FromStringAndSize(data[i].c_str(), data[i].size());
 
         if (!num) {
@@ -33,7 +33,7 @@ PyObject *vectorPagesToList(const std::vector<PageImageInfo> &data) {
     PyObject *listObj = PyList_New(data.size());
     if (!listObj) throw logic_error("Unable to allocate memory for Python list");
 
-    for (int i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         PyObject *dictObj = PyDict_New();
         if (!dictObj) throw logic_error("Unable to allocate memory for Python dict");
 
@@ -52,7 +52,7 @@ PyObject *vectorImagesToList(const std::vector<ImageInfo> &data) {
     PyObject *listObj = PyList_New(data.size());
     if (!listObj) throw logic_error("Unable to allocate memory for Python list");
 
-    for (int i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         PyObject *dictObj = PyDict_New();
         if (!dictObj) throw logic_error("Unable to allocate memory for Python dict");
 
