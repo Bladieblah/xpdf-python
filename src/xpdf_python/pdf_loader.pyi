@@ -17,7 +17,7 @@ class PdfLoader:
     capsule: Optional[XpdfPythonCapsule] = None
 
     def __init__(
-        self, 
+        self,
         filename: str,
         cliptext: bool = False,
         discard_diag: bool = True,
