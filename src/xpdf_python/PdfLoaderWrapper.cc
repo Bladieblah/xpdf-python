@@ -16,12 +16,10 @@ PyObject *construct(PyObject *self, PyObject *args) {
     Py_ssize_t size;
     LoaderConfig config;
 
-    PyArg_ParseTuple(args, "Oppppppp", &pobj0,
+    PyArg_ParseTuple(args, "Oppppp", &pobj0,
         &(config.clipText),
         &(config.discardDiag),
         &(config.discardRotatedText),
-        &(config.noPageBreaks),
-        &(config.insertBOM),
         &(config.verbose),
         &(config.quiet)
     );

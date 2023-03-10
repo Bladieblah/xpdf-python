@@ -9,8 +9,6 @@ def construct(
     cliptext: bool,
     discard_diag: bool,
     discard_rotated_text: bool,
-    no_page_breaks: bool,
-    insert_bom: bool,
     verbose: bool,
     quiet: bool,
 ) -> XpdfPythonCapsule: ...
