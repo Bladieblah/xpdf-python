@@ -1,5 +1,6 @@
 from glob import glob
 from pathlib import Path
+
 from setuptools import Extension, setup
 
 python_dir = Path("src/xpdf_python")
