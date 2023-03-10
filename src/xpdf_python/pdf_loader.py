@@ -8,9 +8,9 @@ class ImageInfo(TypedDict):
     Attributes
     ----------
     width : float
-        Width of the image in pdf coordinates
+        Width of the image in points
     height : float
-        Height of the image in pdf coordinates
+        Height of the image in points
     """
     width: float
     height: float
@@ -24,9 +24,9 @@ class PageInfo(TypedDict):
     page_number : int
         The page number
     width : float
-        Width of the page in pdf coordinates
+        Width of the page in points
     height : float
-        Height of the page in pdf coordinates
+        Height of the page in points
     images : List[ImageInfo]
         A list of images
     """
