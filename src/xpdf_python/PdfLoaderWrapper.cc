@@ -110,7 +110,7 @@ struct PyModuleDef cXpdfPythonModule = {
  */
    PyModuleDef_HEAD_INIT,
    "cXpdfPython",
-   "Non-binary decision tree with an entropy-based splitting criterion.", 
+   "Python wrapper around the pdftotext functionality of xpdf.", 
    // Docstring for the module.
    -1,                   // Used by sub-interpreters, if you do not know what
                          // it is then you do not need it, keep -1 .
