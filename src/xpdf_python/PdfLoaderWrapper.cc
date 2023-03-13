@@ -83,8 +83,6 @@ PyObject *deleteObject(PyObject *self, PyObject *args) {
     if (context) {
         delete context;
     }
-
-    Py_XDECREF(loaderCapsule);
     
     return Py_BuildValue("");
 }
