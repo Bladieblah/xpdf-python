@@ -32,13 +32,14 @@ PyObject *construct(PyObject *self, PyObject *args) {
         char message[1000] = "";
         snprintf(message, 1000, "Error loading file %s", fileName);
         PyErr_SetString(PyExc_IOError, message);
+        delete loader;
         return NULL;
     }
     
     PyObject *loaderCapsule = PyCapsule_New((void *)loader, "loaderPtr", NULL);
     PyCapsule_SetPointer(loaderCapsule, (void *)loader);
     
-    return Py_BuildValue("O", loaderCapsule);
+    return loaderCapsule;
 }
 
 PyObject *extractText(PyObject *self, PyObject *args) {
@@ -73,7 +74,17 @@ PyObject *deleteObject(PyObject *self, PyObject *args) {
     
     PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
     
-    delete loader;
+    if (loader) {
+        delete loader;
+    }
+
+    void *context = PyCapsule_GetContext(loaderCapsule);
+    
+    if (context) {
+        delete context;
+    }
+
+    Py_XDECREF(loaderCapsule);
     
     return Py_BuildValue("");
 }

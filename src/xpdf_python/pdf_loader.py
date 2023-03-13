@@ -119,3 +119,4 @@ class PdfLoader:
     def __del__(self):
         if self.capsule:
             cXpdfPython.deleteObject(self.capsule)
+            del self.capsule
