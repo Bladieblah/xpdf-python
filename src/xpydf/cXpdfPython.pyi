@@ -1,6 +1,6 @@
 from typing import List
 
-from xpdf_python.pdf_loader import PageInfo
+from xpydf.pdf_loader import PageInfo
 
 class XpdfPythonCapsule: ...
 

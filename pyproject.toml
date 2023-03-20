@@ -1,11 +1,11 @@
 [project]
-name = "xpdf-python"
+name = "xpydf"
 version = "0.1.0"
 authors = [
     { name  = "Matthijs Wesseling", email = "matthijs.wesseling@bigdatarepublic.nl" },
 ]
 
-description = "Python wrapper around the pdftotext functionality of xpdf."
+description = "Python wrapper around the pdftotext and pdfimages functionalities of xpdf."
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
