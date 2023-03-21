@@ -1,5 +1,5 @@
 PROGNAME = a.out
-PYDIR = src/xpdf_python/
+PYDIR = src/xpydf/
 
 XDIR = src/xpdf-4.04/
 SPLASH_DIR = $(XDIR)splash/
@@ -9,7 +9,7 @@ XPDF_DIR = $(XDIR)xpdf/
 
 OBJDIR = obj/
 
-PY_SRC = src/xpdf_python/PdfLoader.cc src/xpdf_python/ImageInfoDev.cc
+PY_SRC = src/xpydf/PdfLoader.cc src/xpydf/ImageInfoDev.cc
 SPLASH_SRC = $(wildcard $(SPLASH_DIR)*.cc)
 FOFI_SRC = $(wildcard $(FOFI_DIR)*.cc)
 

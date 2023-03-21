@@ -4,7 +4,7 @@ Python wrapper around the pdftotext functionality of xpdf.
 # Usage
 
 ```python
-from xpdf_python.pdf_loader import PdfLoader
+from xpydf.pdf_loader import PdfLoader
 
 loader = PdfLoader("foo.pdf")
 pdf_text = loader.extract_strings()

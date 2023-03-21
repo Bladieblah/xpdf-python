@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from xpdf_python.pdf_loader import PdfLoader
+from xpydf.pdf_loader import PdfLoader
 
 DATA = Path(__file__).parent / "data"
 

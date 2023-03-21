@@ -1,4 +1,4 @@
-include src/xpdf_python/*
+include src/xpydf/*
 include src/xpdf-4.04/**
 include src/xpdf-4.04/**/*.cc
 include src/xpdf-4.04/**/*.h
