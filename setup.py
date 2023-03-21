@@ -3,7 +3,7 @@ from pathlib import Path
 
 from setuptools import Extension, setup
 
-python_dir = Path("src/xpdf_python")
+python_dir = Path("src/xpydf")
 xpdf_dir = Path("src/xpdf-4.04/xpdf")
 splash_dir = Path("src/xpdf-4.04/splash")
 fofi_dir = Path("src/xpdf-4.04/fofi")
