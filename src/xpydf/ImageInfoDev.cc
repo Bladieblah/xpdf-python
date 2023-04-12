@@ -40,7 +40,7 @@ void ImageInfoDev::addImage(int width, int height, GfxState *state) {
   state->transformDelta(1, 0, &x0, &y0);
   state->transformDelta(0, 1, &x1, &y1);
 
-  images.push_back((ImageInfo) {
+  images.push_back(ImageInfo {
       fmax(fabs(x0), fabs(x1)),
       fmax(fabs(y0), fabs(y1)),
   });
