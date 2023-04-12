@@ -74,9 +74,17 @@
 #define HAVE_MKSTEMPS 1
 #define HAVE_POPEN
 #define HAVE_STD_SORT 1
+
+#if defined(_WIN32) || defined(_WIN64) 
+#define HAVE_FSEEKO 0
+#define HAVE_FSEEK64 0
+#define HAVE_FSEEKI64 1
+#else
 #define HAVE_FSEEKO 1
 #define HAVE_FSEEK64 0
 #define HAVE_FSEEKI64 0
+#endif
+
 #define _FILE_OFFSET_BITS 64
 #define _LARGE_FILES 1
 #define _LARGEFILE_SOURCE 1
