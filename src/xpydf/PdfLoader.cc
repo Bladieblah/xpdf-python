@@ -36,7 +36,7 @@ static void outputToStringStream(void *stream, const char *text, int len) {
 }
 
 
-PdfLoader::PdfLoader(LoaderConfig config, char *fileName) {
+PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *userName, char *password) {
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
   }
@@ -66,7 +66,18 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName) {
   textOutControl.insertBOM = config.insertBOM;
 
   textFileName = new GString(fileName);
-  doc = new PDFDoc(fileName);
+
+  if (userName && password) {
+    GString *userNameGS = new GString(userName);
+    GString *passwordGS = new GString(password);
+    
+    doc = new PDFDoc(fileName, userNameGS, passwordGS);
+    
+    delete userNameGS;
+    delete passwordGS;
+  } else  {
+    doc = new PDFDoc(fileName);
+  }
 }
 
 PdfLoader::~PdfLoader() {

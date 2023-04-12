@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 
 import cXpdfPython
 
@@ -60,6 +60,8 @@ class PdfLoader:
         verbose: bool = False,
         quiet: bool = True,
         mode: str = "table",
+        user_name: Optional[str] = None,
+        password: Optional[str] = None,
     ):
         """Load a file for extraction.
 
@@ -95,7 +97,9 @@ class PdfLoader:
             xpdf_mode = xpdf_modes[mode]
 
         self.filename = filename
-        self.capsule = cXpdfPython.construct(filename, cliptext, discard_diag, discard_rotated_text, verbose, quiet, xpdf_mode)
+        self.capsule = cXpdfPython.construct(
+            filename, cliptext, discard_diag, discard_rotated_text, verbose, quiet, xpdf_mode, user_name, password
+        )
 
     def extract_bytes(self) -> List[bytes]:
         """Extract encoded text from the pdf
