@@ -1,3 +1,4 @@
+import os
 from glob import glob
 from pathlib import Path
 
@@ -64,6 +65,11 @@ xpdf_files = [
 
 xpdf_src = [str(xpdf_dir / filename) for filename in xpdf_files]
 
+if os.name == 'nt':
+    linker_libs = ['Ole32','AdvAPI32','shell32']
+else:
+    linker_libs = []
+    
 cXpdfPython = Extension(
     "cXpdfPython",
     sources=python_src + xpdf_src + splash_src + goo_src + fofi_src,
@@ -75,6 +81,7 @@ cXpdfPython = Extension(
         str(goo_dir),
         str(python_dir),
     ],
+    libraries = linker_libs,
     extra_compile_args=[
         "-std=c++11",
     ],
