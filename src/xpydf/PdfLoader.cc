@@ -120,7 +120,7 @@ std::vector<PageImageInfo> PdfLoader::extractImages() {
       doc->displayPages(imageOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
 
       std::vector<ImageInfo> images(imageOut->images);
-      pagesInfo.push_back((PageImageInfo){
+      pagesInfo.push_back(PageImageInfo{
         page,
         page_width,
         page_height,
