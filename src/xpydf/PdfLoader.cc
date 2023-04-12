@@ -44,7 +44,22 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName) {
   globalParams->setPrintStatusInfo(config.verbose);
   globalParams->setErrQuiet(config.quiet);
 
-  textOutControl.mode = textOutTableLayout;
+  switch (config.mode) {
+    default:
+    case 0:
+      textOutControl.mode = textOutTableLayout;
+      break;
+    case 1:
+      textOutControl.mode = textOutSimpleLayout;
+      break;
+    case 2:
+      textOutControl.mode = textOutLinePrinter;
+      break;
+    case 3:
+      textOutControl.mode = textOutPhysLayout;
+      break;
+  }
+
   textOutControl.clipText = config.clipText;
   textOutControl.discardDiagonalText = config.discardDiag;
   textOutControl.discardRotatedText = config.discardRotatedText;

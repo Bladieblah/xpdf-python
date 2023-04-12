@@ -19,6 +19,7 @@ typedef struct LoaderConfig {
   GBool insertBOM = gFalse;
   GBool verbose = gFalse;
   GBool quiet = gTrue;
+  unsigned int mode = 0;
 } LoaderConfig;
 
 typedef struct PageImageInfo {

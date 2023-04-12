@@ -39,6 +39,14 @@ class PageInfo(TypedDict):
     images: List[ImageInfo]
 
 
+xpdf_modes = {
+    "table": 0,
+    "simple": 1,
+    "lineprinter": 2,
+    "physical": 3,
+}
+
+
 class PdfLoader:
     filename: str
     capsule = None
@@ -51,6 +59,7 @@ class PdfLoader:
         discard_rotated_text: bool = True,
         verbose: bool = False,
         quiet: bool = True,
+        mode: str = "table",
     ):
         """Load a file for extraction.
 
@@ -68,14 +77,25 @@ class PdfLoader:
             Print per-page status information, by default False
         quiet : bool, optional
             Don't print any messages or errors, by default True
+        mode : str, optional
+            Select the xpdf parsing mode, choices are:
+             - table (default): physical layout optimised for tables
+             - simple: simple one-column physical layout
+             - lineprinter: strict fixed-pitch/height layout
+             - physical: maintain original physical layout
 
         Raises
         ------
         IOError
             When the file is not found, or cannot be loaded
         """
+        if mode not in xpdf_modes:
+            xpdf_mode = 0
+        else:
+            xpdf_mode = xpdf_modes[mode]
+
         self.filename = filename
-        self.capsule = cXpdfPython.construct(filename, cliptext, discard_diag, discard_rotated_text, verbose, quiet)
+        self.capsule = cXpdfPython.construct(filename, cliptext, discard_diag, discard_rotated_text, verbose, quiet, xpdf_mode)
 
     def extract_bytes(self) -> List[bytes]:
         """Extract encoded text from the pdf

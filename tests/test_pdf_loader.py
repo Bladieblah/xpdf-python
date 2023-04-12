@@ -48,3 +48,21 @@ class TestPdfLoader(unittest.TestCase):
 
         self.assertEqual(200, images[2]["width"])
         self.assertEqual(200, images[2]["height"])
+    
+    def test_modes(self):
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="table")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="simple")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="lineprinter")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="physical")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+

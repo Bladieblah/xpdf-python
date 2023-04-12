@@ -16,12 +16,13 @@ PyObject *construct(PyObject *self, PyObject *args) {
     Py_ssize_t size;
     LoaderConfig config;
 
-    PyArg_ParseTuple(args, "Oppppp", &pobj0,
+    PyArg_ParseTuple(args, "Opppppb", &pobj0,
         &(config.clipText),
         &(config.discardDiag),
         &(config.discardRotatedText),
         &(config.verbose),
-        &(config.quiet)
+        &(config.quiet),
+        &(config.mode)
     );
     
     char *fileName = (char *)PyUnicode_AsUTF8AndSize(pobj0, &size);
