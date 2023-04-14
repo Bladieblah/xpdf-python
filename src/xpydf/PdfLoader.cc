@@ -181,14 +181,3 @@ bool PdfLoader::isOk() {
 
   return (bool)doc->isOk();
 }
-
-// int main() {
-//   LoaderConfig cfg = LoaderConfig();
-//   cfg.quiet = false;
-//   cfg.verbose = true;
-//   PdfLoader loader = PdfLoader(cfg, "../NL-PDF-Extractietool/data/batches/batch-0/e6155a39-a9bb-11ec-b6f3-005056a6ed7a.pdf");
-//   std::vector<std::string> result = loader.extractText();
-//   for (auto page : result) {
-//     fprintf(stderr, "%s\n", page.c_str());
-//   }
-// }
