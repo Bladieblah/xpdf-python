@@ -36,13 +36,15 @@ static void outputToStringStream(void *stream, const char *text, int len) {
 }
 
 
-PdfLoader::PdfLoader(LoaderConfig config, char *fileName) {
+PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *userPw) {
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
   }
 
   globalParams->setPrintStatusInfo(config.verbose);
   globalParams->setErrQuiet(config.quiet);
+  // globalParams->setMapNumericCharNames(gFalse);
+  // globalParams->setMapUnknownCharNames(gTrue);
 
   switch (config.mode) {
     default:
@@ -66,7 +68,25 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName) {
   textOutControl.insertBOM = config.insertBOM;
 
   textFileName = new GString(fileName);
-  doc = new PDFDoc(fileName);
+
+  GString *ownerPwGs = NULL;
+  GString *userPwGs = NULL;
+  
+  if (ownerPw) {
+    ownerPwGs = new GString(ownerPw);
+  }
+  if (userPw) {
+    userPwGs = new GString(userPw);
+  }
+    
+  doc = new PDFDoc(fileName, ownerPwGs, userPwGs);
+
+  if (ownerPwGs) {
+    delete ownerPwGs;
+  }
+  if (userPwGs) {
+    delete userPwGs;
+  }
 }
 
 PdfLoader::~PdfLoader() {

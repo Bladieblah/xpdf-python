@@ -3,7 +3,7 @@ from pathlib import Path
 
 from xpydf.pdf_loader import PdfLoader
 
-DATA = Path(__file__).parent / "data"
+DATA = Path(__file__).parent / "test_data"
 
 
 class TestPdfLoader(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestPdfLoader(unittest.TestCase):
 
         lines = text[0].split("\n")
         self.assertEqual(6, len(lines))
-        self.assertEqual("XPDF-Python Testing", lines[0])
+        self.assertEqual("XPyDF Testing", lines[0])
 
     def test_page_info(self):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
@@ -65,4 +65,20 @@ class TestPdfLoader(unittest.TestCase):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="physical")
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
-
+    
+    def test_password(self):
+        with self.assertRaises(OSError):
+            PdfLoader(str(DATA / "xpdf_tests_password.pdf"))
+        
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), owner_password="ownerpassword")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+        
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), user_password="userpassword")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+        
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), owner_password="ownerpassword", user_password="userpassword")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+            

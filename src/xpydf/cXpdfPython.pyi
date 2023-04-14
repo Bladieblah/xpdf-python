@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from xpydf.pdf_loader import PageInfo
 
@@ -12,6 +12,8 @@ def construct(
     verbose: bool,
     quiet: bool,
     mode: int,
+    ownerPw: Optional[str] = None,
+    userPw: Optional[str] = None,
 ) -> XpdfPythonCapsule: ...
 def extractText(capsule: XpdfPythonCapsule) -> List[bytes]: ...
 def extractImages(capsule: XpdfPythonCapsule) -> List[PageInfo]: ...
