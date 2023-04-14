@@ -12,8 +12,8 @@ def construct(
     verbose: bool,
     quiet: bool,
     mode: int,
-    user_name: Optional[str] = None,
-    password: Optional[str] = None,
+    ownerPw: Optional[str] = None,
+    userPw: Optional[str] = None,
 ) -> XpdfPythonCapsule: ...
 def extractText(capsule: XpdfPythonCapsule) -> List[bytes]: ...
 def extractImages(capsule: XpdfPythonCapsule) -> List[PageInfo]: ...

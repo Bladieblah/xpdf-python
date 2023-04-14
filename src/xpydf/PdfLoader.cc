@@ -36,13 +36,15 @@ static void outputToStringStream(void *stream, const char *text, int len) {
 }
 
 
-PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *userName, char *password) {
+PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *userPw) {
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
   }
 
   globalParams->setPrintStatusInfo(config.verbose);
   globalParams->setErrQuiet(config.quiet);
+  globalParams->setMapNumericCharNames(gFalse);
+  globalParams->setMapUnknownCharNames(gTrue);
 
   switch (config.mode) {
     default:
@@ -67,16 +69,23 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *userName, char *
 
   textFileName = new GString(fileName);
 
-  if (userName && password) {
-    GString *userNameGS = new GString(userName);
-    GString *passwordGS = new GString(password);
+  GString *ownerPwGs = NULL;
+  GString *userPwGs = NULL;
+  
+  if (ownerPw) {
+    ownerPwGs = new GString(ownerPw);
+  }
+  if (userPw) {
+    userPwGs = new GString(userPw);
+  }
     
-    doc = new PDFDoc(fileName, userNameGS, passwordGS);
-    
-    delete userNameGS;
-    delete passwordGS;
-  } else  {
-    doc = new PDFDoc(fileName);
+  doc = new PDFDoc(fileName, ownerPwGs, userPwGs);
+
+  if (ownerPwGs) {
+    delete ownerPwGs;
+  }
+  if (userPwGs) {
+    delete userPwGs;
   }
 }
 
@@ -172,3 +181,14 @@ bool PdfLoader::isOk() {
 
   return (bool)doc->isOk();
 }
+
+// int main() {
+//   LoaderConfig cfg = LoaderConfig();
+//   cfg.quiet = false;
+//   cfg.verbose = true;
+//   PdfLoader loader = PdfLoader(cfg, "../NL-PDF-Extractietool/data/batches/batch-0/e6155a39-a9bb-11ec-b6f3-005056a6ed7a.pdf");
+//   std::vector<std::string> result = loader.extractText();
+//   for (auto page : result) {
+//     fprintf(stderr, "%s\n", page.c_str());
+//   }
+// }

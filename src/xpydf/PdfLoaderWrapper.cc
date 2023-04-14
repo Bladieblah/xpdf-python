@@ -16,7 +16,8 @@ PyObject *construct(PyObject *self, PyObject *args) {
     Py_ssize_t size;
     LoaderConfig config;
 
-    char *userName, *password;
+    char *ownerPw = NULL;
+    char *userPw = NULL;
 
     PyArg_ParseTuple(args, "Opppppbzz", &pobj0,
         &(config.clipText),
@@ -25,13 +26,13 @@ PyObject *construct(PyObject *self, PyObject *args) {
         &(config.verbose),
         &(config.quiet),
         &(config.mode),
-        &userName,
-        &password
+        &ownerPw,
+        &userPw
     );
     
     char *fileName = (char *)PyUnicode_AsUTF8AndSize(pobj0, &size);
     
-    PdfLoader *loader = new PdfLoader(config, fileName);
+    PdfLoader *loader = new PdfLoader(config, fileName, ownerPw, userPw);
 
     if (!loader->isOk()) {
         char message[1000] = "";

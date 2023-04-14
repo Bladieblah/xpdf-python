@@ -20,7 +20,7 @@ class TestPdfLoader(unittest.TestCase):
 
         lines = text[0].split("\n")
         self.assertEqual(6, len(lines))
-        self.assertEqual("XPDF-Python Testing", lines[0])
+        self.assertEqual("XPyDF Testing", lines[0])
 
     def test_page_info(self):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
@@ -65,4 +65,5 @@ class TestPdfLoader(unittest.TestCase):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="physical")
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
-
+    
+    # def test_

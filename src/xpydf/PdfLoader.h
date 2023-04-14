@@ -30,7 +30,7 @@ typedef struct PageImageInfo {
 
 class PdfLoader {
 public:
-    PdfLoader(LoaderConfig config, char *fileName, char *userName = NULL, char *password = NULL);
+    PdfLoader(LoaderConfig config, char *fileName, char *ownerPw = NULL, char *userPw = NULL);
     ~PdfLoader();
     std::vector<std::string> extractText();
     std::vector<PageImageInfo> extractImages();
