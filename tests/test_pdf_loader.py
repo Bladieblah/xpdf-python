@@ -3,7 +3,7 @@ from pathlib import Path
 
 from xpydf.pdf_loader import PdfLoader
 
-DATA = Path(__file__).parent / "data"
+DATA = Path(__file__).parent / "test_data"
 
 
 class TestPdfLoader(unittest.TestCase):
@@ -66,4 +66,19 @@ class TestPdfLoader(unittest.TestCase):
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
     
-    # def test_
+    def test_password(self):
+        with self.assertRaises(OSError):
+            PdfLoader(str(DATA / "xpdf_tests_password.pdf"))
+        
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), owner_password="ownerpassword")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+        
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), user_password="userpassword")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+        
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), owner_password="ownerpassword", user_password="userpassword")
+        text = loader.extract_strings()
+        self.assertEqual(1, len(text))
+            
