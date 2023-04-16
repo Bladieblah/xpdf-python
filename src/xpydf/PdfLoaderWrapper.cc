@@ -35,52 +35,6 @@ PyObject *construct(PyObject *self, PyObject *args) {
     
     PdfLoader *loader = new PdfLoader(config, fileName, ownerPw, userPw);
 
-    if (!loader->isOk()) {
-        char message[1000] = "";
-        snprintf(message, 1000, "Error loading file %s", fileName);
-        PyErr_SetString(PyExc_IOError, message);
-        delete loader;
-        return NULL;
-    }
-    
-    PyObject *loaderCapsule = PyCapsule_New((void *)loader, "loaderPtr", NULL);
-    PyCapsule_SetPointer(loaderCapsule, (void *)loader);
-    
-    return loaderCapsule;
-}
-
-PyObject *extractText(PyObject *self, PyObject *args) {
-    vector<string> res;
-    
-    PyObject *loaderCapsule;
-    PyArg_ParseTuple(args, "O", &loaderCapsule);
-
-    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
-    vector<string> result = loader->extractText();
-    
-    PyObject *converted = vectorStringToList(result);
-    return Py_BuildValue("O", converted);
-}
-
-PyObject *extractImages(PyObject *self, PyObject *args) {
-    vector<string> res;
-    
-    PyObject *loaderCapsule;
-    PyArg_ParseTuple(args, "O", &loaderCapsule);
-
-    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
-    vector<PageImageInfo> result = loader->extractImages();
-    
-    PyObject *converted = vectorPagesToList(result);
-    return Py_BuildValue("O", converted);
-}
-
-PyObject *deleteObject(PyObject *self, PyObject *args) {
-    PyObject *loaderCapsule;
-    PyArg_ParseTuple(args, "O", &loaderCapsule);
-    
-    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
-
     errCode = loader->getErrorCode();
 	
     if (!loader->isOk()) {
@@ -131,9 +85,48 @@ PyObject *deleteObject(PyObject *self, PyObject *args) {
 			break;
 		}
         delete loader;
-		return NULL;
+	return NULL;
     }
+
     
+    PyObject *loaderCapsule = PyCapsule_New((void *)loader, "loaderPtr", NULL);
+    PyCapsule_SetPointer(loaderCapsule, (void *)loader);
+    
+    return loaderCapsule;
+}
+
+PyObject *extractText(PyObject *self, PyObject *args) {
+    vector<string> res;
+    
+    PyObject *loaderCapsule;
+    PyArg_ParseTuple(args, "O", &loaderCapsule);
+
+    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
+    vector<string> result = loader->extractText();
+    
+    PyObject *converted = vectorStringToList(result);
+    return Py_BuildValue("O", converted);
+}
+
+PyObject *extractImages(PyObject *self, PyObject *args) {
+    vector<string> res;
+    
+    PyObject *loaderCapsule;
+    PyArg_ParseTuple(args, "O", &loaderCapsule);
+
+    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
+    vector<PageImageInfo> result = loader->extractImages();
+    
+    PyObject *converted = vectorPagesToList(result);
+    return Py_BuildValue("O", converted);
+}
+
+PyObject *deleteObject(PyObject *self, PyObject *args) {
+    PyObject *loaderCapsule;
+    PyArg_ParseTuple(args, "O", &loaderCapsule);
+    
+    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
+	
     if (loader) {
         delete loader;
     }
