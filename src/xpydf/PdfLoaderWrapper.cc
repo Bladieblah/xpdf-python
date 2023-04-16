@@ -18,6 +18,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
 
     char *ownerPw = NULL;
     char *userPw = NULL;
+    int errCode = NULL;
 
     PyArg_ParseTuple(args, "Opppppbzz", &pobj0,
         &(config.clipText),
