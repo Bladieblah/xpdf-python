@@ -132,7 +132,6 @@ PyObject *deleteObject(PyObject *self, PyObject *args) {
         delete loader;
 		return NULL;
     }
- 
     
     if (loader) {
         delete loader;
@@ -169,7 +168,6 @@ PyMethodDef cXpdfPythonFunctions[] = {
                                // importing the module.
 };
 
-
 struct PyModuleDef cXpdfPythonModule = {
 /*
  *  Structure which defines the module.
@@ -185,7 +183,6 @@ struct PyModuleDef cXpdfPythonModule = {
                          // it is then you do not need it, keep -1 .
    cXpdfPythonFunctions
 };
-
 
 PyMODINIT_FUNC PyInit_cXpdfPython(void) {
     return PyModule_Create(&cXpdfPythonModule);
