@@ -35,10 +35,9 @@ PyObject *construct(PyObject *self, PyObject *args) {
     
     PdfLoader *loader = new PdfLoader(config, fileName, ownerPw, userPw);
 
-    errCode = loader->getErrorCode();
-	
     if (!loader->isOk()) {
-        char message[1000] = "";
+        errCode = loader->getErrorCode();
+	char message[1000] = "";
         snprintf(message, 1000, "Error loading file %s", fileName);
         PyErr_SetString(PyExc_Exception, message);
 		switch (errCode) {		
