@@ -29,7 +29,7 @@
 /*
  * Enable multithreading support.
  */
-#define MULTITHREADED 0
+#define MULTITHREADED 1
 
 /*
  * Enable C++ exceptions.
