@@ -6,6 +6,7 @@
 #include "Python.h"
 #include "PdfLoader.h"
 #include "PyCppConversion.h"
+#include "ErrorCodes.h"
 
 using namespace std;
 
@@ -18,7 +19,6 @@ PyObject *construct(PyObject *self, PyObject *args) {
 
     char *ownerPw = NULL;
     char *userPw = NULL;
-    int errCode = NULL;
 
     PyArg_ParseTuple(args, "Opppppbzz", &pobj0,
         &(config.clipText),
@@ -36,58 +36,58 @@ PyObject *construct(PyObject *self, PyObject *args) {
     PdfLoader *loader = new PdfLoader(config, fileName, ownerPw, userPw);
 
     if (!loader->isOk()) {
+        int errCode = NULL;
         errCode = loader->getErrorCode();
-	char message[1000] = "";
-        snprintf(message, 1000, "Error loading file %s", fileName);
-        PyErr_SetString(PyExc_Exception, message);
-	switch (errCode) {		
-	  default:
-	  case 1: // couldn't open the PDF file
-		snprintf(message, 1000, "Error opening file %s", fileName);
-		PyErr_SetString(PyExc_OSError, message);
-		break;
-	  case 2: // couldn't read the page catalog
-		snprintf(message, 1000, "Error parsing PDF catalog in file %s", fileName);
-		PyErr_SetString(PyExc_ImportError, message);
-		break;
-	  case 3: // PDF file was damaged and couldn't be repaired
-	    snprintf(message, 1000, "Error parsing PDF file %s. File might be damaged", fileName);		    
-		PyErr_SetString(PyExc_ImportError, message);
-		break;
-	  case 4: // file was encrypted and password was incorrect or not supplied
-	    snprintf(message, 1000, "Error decrypting PDF file %s", fileName);
-		PyErr_SetString(PyExc_PermissionError, message);
-		break;
-	  case 5: // nonexistent or invalid highlight file
-		snprintf(message, 1000, "Error highlight PDF file %s", fileName);
-		PyErr_SetString(PyExc_OSError, message);
-		break;
-	  case 6: // invalid printer
-	    snprintf(message, 1000, "Error bad printer" );
-		PyErr_SetString(PyExc_Exception, message);
-		break;
-	  case 7: // error during printing
-	    snprintf(message, 1000, "Error printing" );
-		PyErr_SetString(PyExc_Exception, message);
-		break;
-	  case 8: // PDF file doesn't allow that operation
-	    snprintf(message, 1000, "Error permissions PDF file %s", fileName);
-		PyErr_SetString(PyExc_PermissionError, message);
-		break;
-	  case 9: // invalid page number
-	    snprintf(message, 1000, "Error bad PDF page number in file %s", fileName);
-		PyErr_SetString(PyExc_ImportError, message);
-		break;
-	  case 10: // file I/O error
-	    snprintf(message, 1000, "Error while read/write file %s", fileName);
-		PyErr_SetString(PyExc_OSError, message);
-		break;
-	}
+        char message[1000] = "";
+        switch (errCode) {        
+          default:
+            snprintf(message, 1000, "Error loading file %s", fileName);
+            PyErr_SetString(PyExc_Exception, message);
+          case errOpenFile: // couldn't open the PDF file
+            snprintf(message, 1000, "Error opening file %s", fileName);
+            PyErr_SetString(PyExc_OSError, message);
+            break;
+          case errBadCatalog: // couldn't read the page catalog
+            snprintf(message, 1000, "Error parsing PDF catalog in file %s", fileName);
+            PyErr_SetString(PyExc_ImportError, message);
+            break;
+          case errDamaged: // PDF file was damaged and couldn't be repaired
+            snprintf(message, 1000, "Error parsing PDF file %s. File might be damaged", fileName);            
+            PyErr_SetString(PyExc_ImportError, message);
+            break;
+          case errEncrypted: // file was encrypted and password was incorrect or not supplied
+            snprintf(message, 1000, "Error decrypting PDF file %s", fileName);
+            PyErr_SetString(PyExc_PermissionError, message);
+            break;
+          case errHighlightFile: // nonexistent or invalid highlight file
+            snprintf(message, 1000, "Error highlight PDF file %s", fileName);
+            PyErr_SetString(PyExc_OSError, message);
+            break;
+          case errBadPrinter: // invalid printer
+            snprintf(message, 1000, "Error bad printer" );
+            PyErr_SetString(PyExc_Exception, message);
+            break;
+          case errPrinting: // error during printing
+            snprintf(message, 1000, "Error printing" );
+            PyErr_SetString(PyExc_Exception, message);
+            break;
+          case errPermission: // PDF file doesn't allow that operation
+            snprintf(message, 1000, "Error permissions PDF file %s", fileName);
+            PyErr_SetString(PyExc_PermissionError, message);
+            break;
+          case errBadPageNum: // invalid page number
+            snprintf(message, 1000, "Error bad PDF page number in file %s", fileName);
+            PyErr_SetString(PyExc_ImportError, message);
+            break;
+          case errFileIO: // file I/O error
+            snprintf(message, 1000, "Error while read/write file %s", fileName);
+            PyErr_SetString(PyExc_OSError, message);
+            break;
+        }
         delete loader;
-	return NULL;
+    return NULL;
     }
 
-    
     PyObject *loaderCapsule = PyCapsule_New((void *)loader, "loaderPtr", NULL);
     PyCapsule_SetPointer(loaderCapsule, (void *)loader);
     
@@ -125,7 +125,7 @@ PyObject *deleteObject(PyObject *self, PyObject *args) {
     PyArg_ParseTuple(args, "O", &loaderCapsule);
     
     PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
-	
+    
     if (loader) {
         delete loader;
     }
