@@ -182,5 +182,5 @@ bool PdfLoader::isOk() {
 }
 
 int PdfLoader::getErrorCode() {
-	return (int)doc->getErrorCode();
+  return (int)doc->getErrorCode();
 }
