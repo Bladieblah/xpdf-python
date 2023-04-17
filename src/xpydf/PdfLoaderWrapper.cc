@@ -85,7 +85,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
             break;
         }
         delete loader;
-    return NULL;
+        return NULL;
     }
 
     PyObject *loaderCapsule = PyCapsule_New((void *)loader, "loaderPtr", NULL);
