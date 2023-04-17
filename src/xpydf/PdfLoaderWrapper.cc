@@ -43,6 +43,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
           default:
             snprintf(message, 1000, "Error loading file %s", fileName);
             PyErr_SetString(PyExc_Exception, message);
+            break;
           case errOpenFile: // couldn't open the PDF file
             snprintf(message, 1000, "Error opening file %s", fileName);
             PyErr_SetString(PyExc_OSError, message);
