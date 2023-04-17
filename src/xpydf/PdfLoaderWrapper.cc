@@ -44,7 +44,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
 	  default:
 	  case 1: // couldn't open the PDF file
 		snprintf(message, 1000, "Error opening file %s", fileName);
-		PyErr_SetString(PyExc_FileNotFoundError, message);
+		PyErr_SetString(PyExc_OSError, message);
 		break;
 	  case 2: // couldn't read the page catalog
 		snprintf(message, 1000, "Error parsing PDF catalog in file %s", fileName);
@@ -60,7 +60,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
 		break;
 	  case 5: // nonexistent or invalid highlight file
 		snprintf(message, 1000, "Error highlight PDF file %s", fileName);
-		PyErr_SetString(PyExc_FileNotFoundError, message);
+		PyErr_SetString(PyExc_OSError, message);
 		break;
 	  case 6: // invalid printer
 	    snprintf(message, 1000, "Error bad printer" );
@@ -80,7 +80,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
 		break;
 	  case 10: // file I/O error
 	    snprintf(message, 1000, "Error while read/write file %s", fileName);
-		PyErr_SetString(PyExc_IOError, message);
+		PyErr_SetString(PyExc_OSError, message);
 		break;
 	}
         delete loader;
