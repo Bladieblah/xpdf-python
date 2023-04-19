@@ -19,6 +19,8 @@ typedef struct LoaderConfig {
   GBool insertBOM = gFalse;
   GBool verbose = gFalse;
   GBool quiet = gTrue;
+  GBool mapNumericCharNames = gFalse;
+  GBool mapUnknownCharNames = gTrue;
   unsigned int mode = 0;
 } LoaderConfig;
 

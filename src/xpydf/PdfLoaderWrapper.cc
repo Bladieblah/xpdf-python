@@ -19,13 +19,15 @@ PyObject *construct(PyObject *self, PyObject *args) {
     char *ownerPw = NULL;
     char *userPw = NULL;
 
-    PyArg_ParseTuple(args, "Opppppbzz", &pobj0,
+    PyArg_ParseTuple(args, "Opppppppbzz", &pobj0,
         &(config.clipText),
         &(config.discardDiag),
         &(config.discardRotatedText),
         &(config.verbose),
         &(config.quiet),
         &(config.mode),
+        &(config.mapNumericCharNames),
+        &(config.mapUnknownCharNames),
         &ownerPw,
         &userPw
     );

@@ -43,8 +43,8 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *u
 
   globalParams->setPrintStatusInfo(config.verbose);
   globalParams->setErrQuiet(config.quiet);
-  // globalParams->setMapNumericCharNames(gFalse);
-  // globalParams->setMapUnknownCharNames(gTrue);
+  globalParams->setMapNumericCharNames(config.mapNumericCharNames);
+  globalParams->setMapUnknownCharNames(config.mapUnknownCharNames);
 
   switch (config.mode) {
     default:

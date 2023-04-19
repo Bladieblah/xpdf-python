@@ -60,6 +60,8 @@ class PdfLoader:
         verbose: bool = False,
         quiet: bool = True,
         mode: str = "table",
+        mapNumericCharNames: bool = False,
+        mapUnknownCharNames: bool = True,
         owner_password: Optional[str] = None,
         user_password: Optional[str] = None,
     ):
@@ -78,6 +80,10 @@ class PdfLoader:
         verbose : bool, optional
             Print per-page status information, by default False
         quiet : bool, optional
+            Don't print any messages or errors, by default True
+        mapNumericCharNames : bool, optional
+            Don't print any messages or errors, by default True
+        mapUnknownCharNames : bool, optional
             Don't print any messages or errors, by default True
         mode : str, optional
             Select the xpdf parsing mode, choices are:
@@ -98,7 +104,7 @@ class PdfLoader:
 
         self.filename = filename
         self.capsule = cXpdfPython.construct(
-            filename, cliptext, discard_diag, discard_rotated_text, verbose, quiet, xpdf_mode, owner_password, user_password
+            filename, cliptext, discard_diag, discard_rotated_text, verbose, quiet, xpdf_mode, mapNumericCharNames, mapUnknownCharNames, owner_password, user_password
         )
 
     def extract_bytes(self) -> List[bytes]:
