@@ -177,7 +177,10 @@ std::vector<PageImageInfo> PdfLoader::extractImages() {
 bool PdfLoader::isOk() {
   if (!doc) {
     return false;
-  }
-
+  }  
   return (bool)doc->isOk();
+}
+
+int PdfLoader::getErrorCode() {
+  return (int)doc->getErrorCode();
 }

@@ -37,6 +37,7 @@ public:
     std::vector<std::string> extractText();
     std::vector<PageImageInfo> extractImages();
     bool isOk();
+    int getErrorCode();
 private:
   TextOutputControl textOutControl;
   PDFDoc *doc;
