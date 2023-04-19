@@ -27,6 +27,8 @@ class PdfLoader:
         verbose: bool = False,
         quiet: bool = True,
         mode: str = "table",
+        map_numeric_char_names: bool = False,
+        map_unknown_char_names: bool = True,
         owner_password: Optional[str] = None,
         user_password: Optional[str] = None,
     ) -> None: ...

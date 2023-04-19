@@ -12,6 +12,8 @@ def construct(
     verbose: bool,
     quiet: bool,
     mode: int,
+    mapNumericCharNames: bool = False,
+    mapUnknownCharNames: bool = True,
     ownerPw: Optional[str] = None,
     userPw: Optional[str] = None,
 ) -> XpdfPythonCapsule: ...

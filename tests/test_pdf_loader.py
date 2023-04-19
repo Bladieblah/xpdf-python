@@ -70,15 +70,15 @@ class TestPdfLoader(unittest.TestCase):
         with self.assertRaises(OSError):
             PdfLoader(str(DATA / "xpdf_tests_password.pdf"))
         
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), owner_password="ownerpassword")
+        loader = PdfLoader(str(DATA / "xpdf_tests_password.pdf"), owner_password="ownerpassword")
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
         
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), user_password="userpassword")
+        loader = PdfLoader(str(DATA / "xpdf_tests_password.pdf"), user_password="userpassword")
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
         
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), owner_password="ownerpassword", user_password="userpassword")
+        loader = PdfLoader(str(DATA / "xpdf_tests_password.pdf"), owner_password="ownerpassword", user_password="userpassword")
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
             

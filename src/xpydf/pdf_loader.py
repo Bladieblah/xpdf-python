@@ -60,8 +60,8 @@ class PdfLoader:
         verbose: bool = False,
         quiet: bool = True,
         mode: str = "table",
-        mapNumericCharNames: bool = False,
-        mapUnknownCharNames: bool = True,
+        map_numeric_char_names: bool = False,
+        map_unknown_char_names: bool = True,
         owner_password: Optional[str] = None,
         user_password: Optional[str] = None,
     ):
@@ -104,7 +104,7 @@ class PdfLoader:
 
         self.filename = filename
         self.capsule = cXpdfPython.construct(
-            filename, cliptext, discard_diag, discard_rotated_text, verbose, quiet, xpdf_mode, mapNumericCharNames, mapUnknownCharNames, owner_password, user_password
+            filename, cliptext, discard_diag, discard_rotated_text, verbose, quiet, xpdf_mode, map_numeric_char_names, map_unknown_char_names, owner_password, user_password
         )
 
     def extract_bytes(self) -> List[bytes]:
