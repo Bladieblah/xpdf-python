@@ -130,7 +130,7 @@ err:
   return pages;
 }
 
-std::vector<PageImageInfo> PdfLoader::extractImages() {
+std::vector<PageImageInfo> PdfLoader::extractPageInfo() {
   ImageInfoDev *imageOut;
   int firstPage, lastPage;
   std::vector<PageImageInfo> pagesInfo;

@@ -110,14 +110,14 @@ PyObject *extractText(PyObject *self, PyObject *args) {
     return Py_BuildValue("O", converted);
 }
 
-PyObject *extractImages(PyObject *self, PyObject *args) {
+PyObject *extractPageInfo(PyObject *self, PyObject *args) {
     vector<string> res;
     
     PyObject *loaderCapsule;
     PyArg_ParseTuple(args, "O", &loaderCapsule);
 
     PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
-    vector<PageImageInfo> result = loader->extractImages();
+    vector<PageImageInfo> result = loader->extractPageInfo();
     
     PyObject *converted = vectorPagesToList(result);
     return Py_BuildValue("O", converted);
@@ -151,8 +151,8 @@ PyMethodDef cXpdfPythonFunctions[] = {
       extractText, METH_VARARGS,
      "Extract text as bytes"},
     
-    {"extractImages",
-      extractImages, METH_VARARGS,
+    {"extractPageInfo",
+      extractPageInfo, METH_VARARGS,
      "Extract image metadata"},
     
     {"deleteObject",
