@@ -14,7 +14,7 @@ enum IMAGE_TYPES {P1 = 1, P2, P3, P4, P5, P6};
 
 typedef struct Image {
   unsigned int image_type;
-  unsigned int width, height;
+  unsigned int width, height, size;
   unsigned char *data;
 } Image;
 

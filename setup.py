@@ -1,6 +1,7 @@
 import os
 from glob import glob
 from pathlib import Path
+import numpy as np
 
 from setuptools import Extension, setup
 
@@ -80,6 +81,7 @@ cXpdfPython = Extension(
         str(splash_dir),
         str(goo_dir),
         str(python_dir),
+        np.get_include(),
     ],
     libraries = linker_libs,
     extra_compile_args=[

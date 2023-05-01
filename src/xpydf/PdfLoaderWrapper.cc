@@ -3,7 +3,10 @@
 #include <string>
 #include <vector>
 
-#include "Python.h"
+#include <Python.h>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
+
 #include "PdfLoader.h"
 #include "PyCppConversion.h"
 #include "ErrorCodes.h"
@@ -123,6 +126,27 @@ PyObject *extractPageInfo(PyObject *self, PyObject *args) {
     return Py_BuildValue("O", converted);
 }
 
+PyObject *extractImages(PyObject *self, PyObject *args) {
+    vector<string> res;
+    
+    PyObject *loaderCapsule;
+    int pageNum;
+    PyArg_ParseTuple(args, "Oi", &loaderCapsule, &pageNum);
+
+    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
+    vector<Image> images = loader->extractImages(pageNum);
+    
+    PyObject *imageList = PyList_New(images.size());
+    PyObject *array;
+    for (size_t i = 0; i < images.size(); i++) {
+      Image image = images[i];
+      npy_intp dims[2] = {image.width, image.height};
+      array = PyArray_SimpleNewFromData(2, dims, NPY_UINT8, image.data);
+      PyList_SetItem(imageList, i, array);
+    }
+    return Py_BuildValue("O", imageList);
+}
+
 PyObject *deleteObject(PyObject *self, PyObject *args) {
     PyObject *loaderCapsule;
     PyArg_ParseTuple(args, "O", &loaderCapsule);
@@ -154,6 +178,10 @@ PyMethodDef cXpdfPythonFunctions[] = {
     {"extractPageInfo",
       extractPageInfo, METH_VARARGS,
      "Extract image metadata"},
+    
+    {"extractImages",
+      extractImages, METH_VARARGS,
+     "Extract images"},
     
     {"deleteObject",
       deleteObject, METH_VARARGS,
