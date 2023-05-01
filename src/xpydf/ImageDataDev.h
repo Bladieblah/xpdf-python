@@ -21,8 +21,9 @@ typedef struct Image {
 class ImageDataDev: public ImageOutputDev {
 public:
   ImageDataDev(char *fileRootA, GBool dumpJPEGA, GBool dumpRawA,
-    GBool listA) : ImageOutputDev(fileRootA, dumpJPEGA, dumpRawA, listA) {
+    GBool listA, std::vector<Image> *imagesA) : ImageOutputDev(fileRootA, dumpJPEGA, dumpRawA, listA) {
       imgNum = 0;
+      images = imagesA;
     };
 
   virtual void startPage(int pageNum, GfxState *state);
@@ -33,11 +34,9 @@ public:
   virtual void drawImageMask(GfxState *state, Object *ref, Stream *str,
     int width, int height, GBool invert,
     GBool inlineImg, GBool interpolate);
-    
-  void addImage(int width, int height, GfxState *state);
 
   int curPageNum;
-  std::vector<Image> images;
+  std::vector<Image> *images;
   int imgNum;			// current image number
 };
 

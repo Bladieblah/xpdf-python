@@ -24,7 +24,6 @@ void ImageDataDev::drawImage(GfxState *state, Object *ref, Stream *str,
   int *maskColors, GBool inlineImg,
   GBool interpolate
 ) {
-  fprintf(stderr, "drawImage\n");
   ImageStream *imgStr;
   Guchar *p;
   GfxRGB rgb;
@@ -68,14 +67,13 @@ void ImageDataDev::drawImage(GfxState *state, Object *ref, Stream *str,
   imgStr->close();
   delete imgStr;
   
-  images.push_back(image);
+  images->push_back(image);
 }
 
 void ImageDataDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
     int width, int height, GBool invert,
     GBool inlineImg, GBool interpolate
 ) {
-  fprintf(stderr, "drawImageMask\n");
   char buf[4096];
   int size, n, i, m;
   Image image = {
@@ -110,10 +108,10 @@ void ImageDataDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
 
   str->close();
   
-  images.push_back(image);
+  images->push_back(image);
 }
 
 void ImageDataDev::startPage(int pageNum, GfxState *state) {
   curPageNum = pageNum;
-  images.clear();
+  images->clear();
 }

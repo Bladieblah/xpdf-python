@@ -138,12 +138,16 @@ PyObject *extractImages(PyObject *self, PyObject *args) {
     
     PyObject *imageList = PyList_New(images.size());
     PyObject *array;
+    
     for (size_t i = 0; i < images.size(); i++) {
       Image image = images[i];
-      npy_intp dims[2] = {image.width, image.height};
-      array = PyArray_SimpleNewFromData(2, dims, NPY_UINT8, image.data);
+      npy_intp dims[1] = {image.size};
+      array = PyArray_SimpleNewFromData(1, dims, NPY_BYTE, image.data);
+      PyObject *shape = Py_BuildValue("iii", image.height, image.width, 3);
+      array = PyArray_Reshape((PyArrayObject *)array, shape);
       PyList_SetItem(imageList, i, array);
     }
+
     return Py_BuildValue("O", imageList);
 }
 
@@ -209,5 +213,6 @@ struct PyModuleDef cXpdfPythonModule = {
 };
 
 PyMODINIT_FUNC PyInit_cXpdfPython(void) {
+    import_array();
     return PyModule_Create(&cXpdfPythonModule);
 }
