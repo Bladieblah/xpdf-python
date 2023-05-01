@@ -35,7 +35,7 @@ void ImageDataDev::drawImage(GfxState *state, Object *ref, Stream *str,
     static_cast<unsigned int>(IMAGE_TYPES::P4),
     static_cast<unsigned int>(width),
     static_cast<unsigned int>(height),
-    3 * width * height,
+    static_cast<unsigned int>(3 * width * height),
     nullptr
   };
   image.data = (unsigned char *)malloc(image.size * sizeof(unsigned char));
@@ -82,7 +82,7 @@ void ImageDataDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
     static_cast<unsigned int>(IMAGE_TYPES::P4),
     static_cast<unsigned int>(width),
     static_cast<unsigned int>(height),
-    height * ((width + 7) / 8),
+    static_cast<unsigned int>(height * ((width + 7) / 8)),
     nullptr
   };
   

@@ -24,7 +24,7 @@ class TestPdfLoader(unittest.TestCase):
 
     def test_page_info(self):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
-        page_info = loader.extract_images()
+        page_info = loader.extract_page_info()
 
         self.assertEqual(1, len(page_info))
 
@@ -33,9 +33,9 @@ class TestPdfLoader(unittest.TestCase):
         self.assertEqual(612, page["width"])
         self.assertEqual(792, page["height"])
 
-    def test_image_extraction(self):
+    def test_info_extraction(self):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
-        page_info = loader.extract_images()
+        page_info = loader.extract_page_info()
         images = page_info[0]["images"]
 
         self.assertEqual(3, len(images))
@@ -48,6 +48,14 @@ class TestPdfLoader(unittest.TestCase):
 
         self.assertEqual(200, images[2]["width"])
         self.assertEqual(200, images[2]["height"])
+    
+    def test_image_extraction(self):
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
+        images = loader.extract_images(1)
+
+        print(len(images))
+        for image in images:
+            print(image.shape)
     
     def test_modes(self):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="table")
