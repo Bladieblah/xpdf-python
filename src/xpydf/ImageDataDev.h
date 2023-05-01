@@ -10,16 +10,20 @@
 #include "ImageOutputDev.h"
 
 
+enum IMAGE_TYPES {P1 = 1, P2, P3, P4, P5, P6};
+
 typedef struct Image {
-  int pageNum;
+  unsigned int image_type;
   unsigned int width, height;
-  
+  unsigned char *data;
 } Image;
 
 class ImageDataDev: public ImageOutputDev {
 public:
   ImageDataDev(char *fileRootA, GBool dumpJPEGA, GBool dumpRawA,
-		 GBool listA) : ImageOutputDev(fileRootA, dumpJPEGA, dumpRawA, listA) {};
+    GBool listA) : ImageOutputDev(fileRootA, dumpJPEGA, dumpRawA, listA) {
+      imgNum = 0;
+    };
 
   virtual void startPage(int pageNum, GfxState *state);
   
@@ -34,6 +38,7 @@ public:
 
   int curPageNum;
   std::vector<Image> images;
+  int imgNum;			// current image number
 };
 
 #endif

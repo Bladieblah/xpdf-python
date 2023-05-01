@@ -9,7 +9,7 @@ XPDF_DIR = $(XDIR)xpdf/
 
 OBJDIR = obj/
 
-PY_SRC = src/xpydf/PdfLoader.cc src/xpydf/ImageInfoDev.cc
+PY_SRC = src/xpydf/PdfLoader.cc src/xpydf/ImageInfoDev.cc src/xpydf/ImageDataDev.cc
 SPLASH_SRC = $(wildcard $(SPLASH_DIR)*.cc)
 FOFI_SRC = $(wildcard $(FOFI_DIR)*.cc)
 

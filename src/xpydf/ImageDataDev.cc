@@ -24,26 +24,91 @@ void ImageDataDev::drawImage(GfxState *state, Object *ref, Stream *str,
   int *maskColors, GBool inlineImg,
   GBool interpolate
 ) {
-  addImage(width, height, state);
+  fprintf(stderr, "drawImage\n");
+  ImageStream *imgStr;
+  Guchar *p;
+  GfxRGB rgb;
+  int x, y;
+  int n = 0;
+  
+  Image image = {
+    static_cast<unsigned int>(IMAGE_TYPES::P4),
+    static_cast<unsigned int>(width),
+    static_cast<unsigned int>(height),
+    nullptr
+  };
+  image.data = (unsigned char *)malloc(3 * width * height * sizeof(unsigned char));
+  imgNum++;
+
+  // initialize stream
+  imgStr = new ImageStream(str, width, colorMap->getNumPixelComps(), colorMap->getBits());
+  imgStr->reset();
+
+  // for each line...
+  for (y = 0; y < height; ++y) {
+    // write the line
+    if ((p = imgStr->getLine())) {
+      for (x = 0; x < width; ++x) {
+        colorMap->getRGB(p, &rgb, state->getRenderingIntent());
+        image.data[n++] = colToByte(rgb.r);
+        image.data[n++] = colToByte(rgb.g);
+        image.data[n++] = colToByte(rgb.b);
+        p += colorMap->getNumPixelComps();
+      }
+    } else {
+      for (x = 0; x < width; ++x) {
+        image.data[n++] = 0;
+        image.data[n++] = 0;
+        image.data[n++] = 0;
+      }
+    }
+  }
+
+  imgStr->close();
+  delete imgStr;
+  
+  images.push_back(image);
 }
 
 void ImageDataDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
     int width, int height, GBool invert,
     GBool inlineImg, GBool interpolate
 ) {
-  addImage(width, height, state);
-}
+  fprintf(stderr, "drawImageMask\n");
+  char buf[4096];
+  int size, n, i, m;
+  Image image = {
+    static_cast<unsigned int>(IMAGE_TYPES::P4),
+    static_cast<unsigned int>(width),
+    static_cast<unsigned int>(height),
+    nullptr
+  };
+  
+  size = height * ((width + 7) / 8);
+  image.data = (unsigned char *)malloc(size * sizeof(unsigned char));
+  imgNum++;
 
-void ImageDataDev::addImage(int width, int height, GfxState *state) {
-  double x0, y0, x1, y1;
+  // initialize stream
+  str->reset();
 
-  state->transformDelta(1, 0, &x0, &y0);
-  state->transformDelta(0, 1, &x1, &y1);
+  // copy the stream
+  m = 0;
 
-  images.push_back(Image {
-      fmax(fabs(x0), fabs(x1)),
-      fmax(fabs(y0), fabs(y1)),
-  });
+  while (size > 0) {
+    i = size < (int)sizeof(buf) ? size : (int)sizeof(buf);
+    n = str->getBlock(((char *)image.data) + m, i);
+    
+    if (n < i) {
+      break;
+    }
+    
+    size -= n;
+    m += n;
+  }
+
+  str->close();
+  
+  images.push_back(image);
 }
 
 void ImageDataDev::startPage(int pageNum, GfxState *state) {

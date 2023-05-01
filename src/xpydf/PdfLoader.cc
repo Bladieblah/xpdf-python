@@ -177,16 +177,12 @@ std::vector<PageImageInfo> PdfLoader::extractPageInfo() {
 
 std::vector<Image> PdfLoader::extractImages(int pageNum) {
   ImageDataDev *imageOut;
-  int firstPage, lastPage;
   std::vector<Image> images;
   char dummyFile[1] = "";
 
   if (!doc->isOk()) {
     goto err;
   }
-
-  firstPage = 1;
-  lastPage = doc->getNumPages();
   
   imageOut = new ImageDataDev(dummyFile, gFalse, gFalse, gTrue);
 
@@ -216,4 +212,14 @@ bool PdfLoader::isOk() {
 
 int PdfLoader::getErrorCode() {
   return (int)doc->getErrorCode();
+}
+
+int main() {
+  char filename[100] = "tests/test_data/xpdf_tests.pdf";
+  LoaderConfig config;
+  PdfLoader loader = PdfLoader(config, filename);
+
+  loader.extractImages(1);
+
+  return 0;
 }
