@@ -28,6 +28,7 @@
 #include "config.h"
 
 #include "PdfLoader.h"
+#include "ImageDataDev.h"
 #include "ImageInfoDev.h"
 
 
@@ -172,6 +173,38 @@ std::vector<PageImageInfo> PdfLoader::extractPageInfo() {
   gMemReport(stderr);
 
   return pagesInfo;
+}
+
+std::vector<Image> PdfLoader::extractImages(int pageNum) {
+  ImageDataDev *imageOut;
+  int firstPage, lastPage;
+  std::vector<Image> images;
+  char dummyFile[1] = "";
+
+  if (!doc->isOk()) {
+    goto err;
+  }
+
+  firstPage = 1;
+  lastPage = doc->getNumPages();
+  
+  imageOut = new ImageDataDev(dummyFile, gFalse, gFalse, gTrue);
+
+  if (imageOut->isOk()) {
+    Page *pdfpage = doc->getCatalog()->getPage(pageNum);
+    
+    doc->displayPages(imageOut, pageNum, pageNum, 72, 72, 0, gFalse, gTrue, gFalse);
+
+    std::vector<Image> images(imageOut->images);
+  }
+
+  delete imageOut;
+ err:
+
+  Object::memCheck(stderr);
+  gMemReport(stderr);
+
+  return images;
 }
 
 bool PdfLoader::isOk() {

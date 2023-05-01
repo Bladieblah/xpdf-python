@@ -9,6 +9,7 @@
 #include "PDFDoc.h"
 #include "TextOutputDev.h"
 
+#include "ImageDataDev.h"
 #include "ImageInfoDev.h"
 
 typedef struct LoaderConfig {
@@ -36,6 +37,7 @@ public:
     ~PdfLoader();
     std::vector<std::string> extractText();
     std::vector<PageImageInfo> extractPageInfo();
+    std::vector<Image> extractImages(int pageNum);
     bool isOk();
     int getErrorCode();
 private:
