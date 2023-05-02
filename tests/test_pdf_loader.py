@@ -17,7 +17,7 @@ class TestPdfLoader(unittest.TestCase):
 
         text = loader.extract_strings()
 
-        self.assertEqual(1, len(text))
+        self.assertEqual(2, len(text))
 
         lines = text[0].split("\n")
         self.assertEqual(6, len(lines))
@@ -27,7 +27,7 @@ class TestPdfLoader(unittest.TestCase):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
         page_info = loader.extract_page_info()
 
-        self.assertEqual(1, len(page_info))
+        self.assertEqual(2, len(page_info))
 
         page = page_info[0]
         self.assertEqual(1, page["page_number"])
@@ -75,23 +75,29 @@ class TestPdfLoader(unittest.TestCase):
         self.assertTrue(np.all(images[2][:,:,0] == 0))
         self.assertTrue(np.all(images[2][:,:,1] == 255))
         self.assertTrue(np.all(images[2][:,:,2] == 0))
+
+
+        images = loader.extract_images(2)
+        self.assertEqual(1, len(images))
+        self.assertEqual((150, 150), images[0].shape)
+        self.assertTrue(np.all(images[0] == 150))
     
     def test_modes(self):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="table")
         text = loader.extract_strings()
-        self.assertEqual(1, len(text))
+        self.assertEqual(2, len(text))
 
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="simple")
         text = loader.extract_strings()
-        self.assertEqual(1, len(text))
+        self.assertEqual(2, len(text))
 
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="lineprinter")
         text = loader.extract_strings()
-        self.assertEqual(1, len(text))
+        self.assertEqual(2, len(text))
 
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="physical")
         text = loader.extract_strings()
-        self.assertEqual(1, len(text))
+        self.assertEqual(2, len(text))
     
     def test_password(self):
         with self.assertRaises(OSError):
