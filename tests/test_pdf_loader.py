@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+import numpy as np
 
 from xpydf.pdf_loader import PdfLoader
 
@@ -52,10 +53,28 @@ class TestPdfLoader(unittest.TestCase):
     def test_image_extraction(self):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
         images = loader.extract_images(1)
+        
+        self.assertEqual(3, len(images))
+        
+        self.assertEqual((100, 100, 3), images[0].shape)
+        self.assertEqual((100, 100, 3), images[1].shape)
+        self.assertEqual((200, 200, 3), images[2].shape)
 
-        print(len(images))
-        for image in images:
-            print(image.shape)
+        self.assertEqual(images[0].dtype, np.uint8)
+        self.assertEqual(images[1].dtype, np.uint8)
+        self.assertEqual(images[2].dtype, np.uint8)
+
+        self.assertTrue(np.all(images[0][:,:,0] == 255))
+        self.assertTrue(np.all(images[0][:,:,1] == 0))
+        self.assertTrue(np.all(images[0][:,:,2] == 0))
+
+        self.assertTrue(np.all(images[1][:,:,0] == 255))
+        self.assertTrue(np.all(images[1][:,:,1] == 0))
+        self.assertTrue(np.all(images[1][:,:,2] == 0))
+
+        self.assertTrue(np.all(images[2][:,:,0] == 0))
+        self.assertTrue(np.all(images[2][:,:,1] == 255))
+        self.assertTrue(np.all(images[2][:,:,2] == 0))
     
     def test_modes(self):
         loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="table")

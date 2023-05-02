@@ -31,7 +31,7 @@ void ImageDataDev::drawImage(GfxState *state, Object *ref, Stream *str,
   int n = 0;
   
   Image image = {
-    static_cast<unsigned int>(IMAGE_TYPES::P4),
+    static_cast<unsigned int>(IMAGE_TYPES::P6),
     static_cast<unsigned int>(width),
     static_cast<unsigned int>(height),
     static_cast<unsigned int>(3 * width * height),
@@ -44,9 +44,7 @@ void ImageDataDev::drawImage(GfxState *state, Object *ref, Stream *str,
   imgStr = new ImageStream(str, width, colorMap->getNumPixelComps(), colorMap->getBits());
   imgStr->reset();
 
-  // for each line...
   for (y = 0; y < height; ++y) {
-    // write the line
     if ((p = imgStr->getLine())) {
       for (x = 0; x < width; ++x) {
         colorMap->getRGB(p, &rgb, state->getRenderingIntent());
@@ -88,12 +86,8 @@ void ImageDataDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
   image.data = (unsigned char *)malloc(image.size * sizeof(unsigned char));
   imgNum++;
 
-  // initialize stream
   str->reset();
-
-  // copy the stream
   m = 0;
-
   while (size > 0) {
     i = size < (int)sizeof(buf) ? size : (int)sizeof(buf);
     n = str->getBlock(((char *)image.data) + m, i);

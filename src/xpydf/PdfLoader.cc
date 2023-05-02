@@ -188,7 +188,6 @@ std::vector<Image> PdfLoader::extractImages(int pageNum) {
 
   if (imageOut->isOk()) {
     doc->displayPages(imageOut, pageNum, pageNum, 72, 72, 0, gFalse, gTrue, gFalse);
-    fprintf(stderr, "%lu images\n", images.size());
   }
 
   delete imageOut;
@@ -197,7 +196,6 @@ std::vector<Image> PdfLoader::extractImages(int pageNum) {
   Object::memCheck(stderr);
   gMemReport(stderr);
 
-  fprintf(stderr, "%lu images\n", images.size());
   return images;
 }
 
