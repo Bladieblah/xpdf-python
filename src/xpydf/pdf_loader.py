@@ -1,4 +1,4 @@
-from typing import List, Optional, TypedDict
+from typing import Any, List, Optional, TypedDict
 
 import cXpdfPython
 import numpy.typing as npt
@@ -147,15 +147,20 @@ class PdfLoader:
 
         return images
 
-    def extract_images(self, page_number: int) -> List[npt.NDArray]:
-        """Return image related metadata from the pdf
+    def extract_images(self, page_number: int) -> List[npt.NDArray[Any]]:
+        """Extract raw image data from a page, as a numpy array.
+
+        Parameters
+        ----------
+        page_number : int
+            Page to extract images from
 
         Returns
         -------
-        List[PageInfo]
-            A PageInfo object for each page
+        List[npt.NDArray[Any]]
+            Image data.
         """
-        images: List[npt.NDArray] = []
+        images: List[npt.NDArray[Any]] = []
         if self.capsule is not None:
             images = cXpdfPython.extractImages(self.capsule, page_number)
 
