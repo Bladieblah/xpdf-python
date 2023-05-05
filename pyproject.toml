@@ -13,6 +13,9 @@ classifiers = [
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
 ]
+dependencies = [
+    "numpy == 1.21.6",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/Bladieblah/xpdf-python"
@@ -21,6 +24,7 @@ classifiers = [
 [build-system]
 requires = [
     "setuptools>=42",
+    "numpy == 1.21.6",
 ]
 build-backend = "setuptools.build_meta"
 

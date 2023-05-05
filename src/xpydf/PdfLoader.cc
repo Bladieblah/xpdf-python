@@ -28,6 +28,7 @@
 #include "config.h"
 
 #include "PdfLoader.h"
+#include "ImageDataDev.h"
 #include "ImageInfoDev.h"
 
 
@@ -130,7 +131,7 @@ err:
   return pages;
 }
 
-std::vector<PageImageInfo> PdfLoader::extractImages() {
+std::vector<PageImageInfo> PdfLoader::extractPageInfo() {
   ImageInfoDev *imageOut;
   int firstPage, lastPage;
   std::vector<PageImageInfo> pagesInfo;
@@ -174,6 +175,30 @@ std::vector<PageImageInfo> PdfLoader::extractImages() {
   return pagesInfo;
 }
 
+std::vector<Image> PdfLoader::extractImages(int pageNum) {
+  ImageDataDev *imageOut;
+  std::vector<Image> images;
+  char dummyFile[1] = "";
+
+  if (!doc->isOk()) {
+    goto err;
+  }
+  
+  imageOut = new ImageDataDev(dummyFile, gFalse, gFalse, gTrue, &images);
+
+  if (imageOut->isOk()) {
+    doc->displayPages(imageOut, pageNum, pageNum, 72, 72, 0, gFalse, gTrue, gFalse);
+  }
+
+  delete imageOut;
+ err:
+
+  Object::memCheck(stderr);
+  gMemReport(stderr);
+
+  return images;
+}
+
 bool PdfLoader::isOk() {
   if (!doc) {
     return false;
@@ -183,4 +208,14 @@ bool PdfLoader::isOk() {
 
 int PdfLoader::getErrorCode() {
   return (int)doc->getErrorCode();
+}
+
+int main() {
+  char filename[100] = "tests/test_data/xpdf_tests.pdf";
+  LoaderConfig config;
+  PdfLoader loader = PdfLoader(config, filename);
+
+  loader.extractImages(1);
+
+  return 0;
 }

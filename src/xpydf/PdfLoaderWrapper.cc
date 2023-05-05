@@ -3,7 +3,10 @@
 #include <string>
 #include <vector>
 
-#include "Python.h"
+#include <Python.h>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
+
 #include "PdfLoader.h"
 #include "PyCppConversion.h"
 #include "ErrorCodes.h"
@@ -110,17 +113,50 @@ PyObject *extractText(PyObject *self, PyObject *args) {
     return Py_BuildValue("O", converted);
 }
 
-PyObject *extractImages(PyObject *self, PyObject *args) {
+PyObject *extractPageInfo(PyObject *self, PyObject *args) {
     vector<string> res;
     
     PyObject *loaderCapsule;
     PyArg_ParseTuple(args, "O", &loaderCapsule);
 
     PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
-    vector<PageImageInfo> result = loader->extractImages();
+    vector<PageImageInfo> result = loader->extractPageInfo();
     
     PyObject *converted = vectorPagesToList(result);
     return Py_BuildValue("O", converted);
+}
+
+PyObject *extractImages(PyObject *self, PyObject *args) {
+    vector<string> res;
+    
+    PyObject *loaderCapsule;
+    int pageNum;
+    PyArg_ParseTuple(args, "Oi", &loaderCapsule, &pageNum);
+
+    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
+    vector<Image> images = loader->extractImages(pageNum);
+    
+    PyObject *imageList = PyList_New(images.size());
+    PyObject *array;
+    
+    for (size_t i = 0; i < images.size(); i++) {
+      Image image = images[i];
+      npy_intp dims[1] = {image.size};
+      array = PyArray_SimpleNewFromData(1, dims, NPY_UINT8, image.data);
+      
+      // Only reshape P6 images, P4 contain multiple pixels per byte
+      if (image.image_type == IMAGE_TYPES::P5) {
+        PyObject *shape = Py_BuildValue("ii", image.height, image.width);
+        array = PyArray_Reshape((PyArrayObject *)array, shape);
+      } else if (image.image_type == IMAGE_TYPES::P6) {
+        PyObject *shape = Py_BuildValue("iii", image.height, image.width, 3);
+        array = PyArray_Reshape((PyArrayObject *)array, shape);
+      }
+
+      PyList_SetItem(imageList, i, array);
+    }
+
+    return Py_BuildValue("O", imageList);
 }
 
 PyObject *deleteObject(PyObject *self, PyObject *args) {
@@ -151,9 +187,13 @@ PyMethodDef cXpdfPythonFunctions[] = {
       extractText, METH_VARARGS,
      "Extract text as bytes"},
     
+    {"extractPageInfo",
+      extractPageInfo, METH_VARARGS,
+     "Extract image metadata"},
+    
     {"extractImages",
       extractImages, METH_VARARGS,
-     "Extract image metadata"},
+     "Extract images"},
     
     {"deleteObject",
       deleteObject, METH_VARARGS,
@@ -181,5 +221,6 @@ struct PyModuleDef cXpdfPythonModule = {
 };
 
 PyMODINIT_FUNC PyInit_cXpdfPython(void) {
+    import_array();
     return PyModule_Create(&cXpdfPythonModule);
 }
