@@ -34,6 +34,7 @@ typedef struct PageImageInfo {
 class PdfLoader {
 public:
     PdfLoader(LoaderConfig config, char *fileName, char *ownerPw = NULL, char *userPw = NULL);
+    PdfLoader(LoaderConfig config, MemStream *stream, Object *objA, char *dataA, char *ownerPw = NULL, char *userPw = NULL);
     ~PdfLoader();
     std::vector<std::string> extractText();
     std::vector<PageImageInfo> extractPageInfo();
@@ -43,7 +44,10 @@ public:
 private:
   TextOutputControl textOutControl;
   PDFDoc *doc;
+  Object *obj;
+  char *data;
   GString *textFileName;
+  bool needFree = false;
 };
 
 #endif

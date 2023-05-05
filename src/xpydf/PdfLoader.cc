@@ -90,12 +90,59 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *u
   }
 }
 
-PdfLoader::~PdfLoader() {
-  delete textFileName;
-  delete doc;
+PdfLoader::PdfLoader(LoaderConfig config, MemStream *str, Object *objA, char *dataA, char *ownerPw, char *userPw) {
+  obj = objA;
+  data = dataA;
+  needFree = true;
 
-  Object::memCheck(stderr);
-  gMemReport(stderr);
+  if (globalParams == NULL) {
+    globalParams = new GlobalParams("");
+  }
+
+  globalParams->setPrintStatusInfo(config.verbose);
+  globalParams->setErrQuiet(config.quiet);
+  globalParams->setMapNumericCharNames(config.mapNumericCharNames);
+  globalParams->setMapUnknownCharNames(config.mapUnknownCharNames);
+
+  switch (config.mode) {
+    default:
+    case 0:
+      textOutControl.mode = textOutTableLayout;
+      break;
+    case 1:
+      textOutControl.mode = textOutSimpleLayout;
+      break;
+    case 2:
+      textOutControl.mode = textOutLinePrinter;
+      break;
+    case 3:
+      textOutControl.mode = textOutPhysLayout;
+      break;
+  }
+
+  textOutControl.clipText = config.clipText;
+  textOutControl.discardDiagonalText = config.discardDiag;
+  textOutControl.discardRotatedText = config.discardRotatedText;
+  textOutControl.insertBOM = config.insertBOM;
+
+  GString *ownerPwGs = NULL;
+  GString *userPwGs = NULL;
+  
+  if (ownerPw) {
+    ownerPwGs = new GString(ownerPw);
+  }
+  if (userPw) {
+    userPwGs = new GString(userPw);
+  }
+    
+  doc = new PDFDoc(str, ownerPwGs, userPwGs);
+
+  if (ownerPwGs) {
+    delete ownerPwGs;
+  }
+  if (userPwGs) {
+    delete userPwGs;
+  }
 }
 
 std::vector<std::string> PdfLoader::extractText() {
@@ -210,12 +257,57 @@ int PdfLoader::getErrorCode() {
   return (int)doc->getErrorCode();
 }
 
-int main() {
-  char filename[100] = "tests/test_data/xpdf_tests.pdf";
-  LoaderConfig config;
-  PdfLoader loader = PdfLoader(config, filename);
+PdfLoader::~PdfLoader() {
+  if (textFileName)
+    delete textFileName;
+  if (doc)
+    delete doc;
+  if (obj)
+    delete obj;
+  if (needFree)
+    free(data);
 
-  loader.extractImages(1);
+  Object::memCheck(stderr);
+  gMemReport(stderr);
+}
+
+int main() {
+  char *pdf;
+  FILE *f;
+  char filename[100] = "tests/test_data/xpdf_tests.pdf";
+  size_t blockSize = 10000;
+  LoaderConfig config;
+
+  f = fopen(filename, "rb");
+
+  if (f) {
+    pdf = (char *)malloc(blockSize * sizeof(char));
+    int i = 0;
+    int b, c = 0;
+    b = fread(pdf + i * blockSize, 1, blockSize, f);
+    c += b;
+    while (b == blockSize) {
+      pdf = (char *)realloc(pdf, blockSize * (i + 2));
+      i++;
+      b = fread(pdf + i * blockSize, 1, blockSize, f);
+      c += b;
+    }
+
+    Object *obj = new Object;
+    obj->initNull();
+    MemStream *str = new MemStream(pdf, 0, c, obj);
+
+    PdfLoader *loader = new PdfLoader(config, str, obj, pdf);
+
+    for (auto s : loader->extractText()) {
+      fprintf(stderr, "%s\nEOF\n\n", s.c_str());
+    }
+
+    if (loader) {
+      fprintf(stderr, "Deleting loader\n");
+      delete loader;
+    }
+  }
 
   return 0;
 }

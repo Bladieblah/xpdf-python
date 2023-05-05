@@ -106,6 +106,46 @@ PyObject *construct(PyObject *self, PyObject *args) {
   return loaderCapsule;
 }
 
+PyObject *constructString(PyObject *self, PyObject *args) {
+  Py_buffer *pobj0;
+  Py_ssize_t size;
+  LoaderConfig config;
+
+  char *ownerPw = NULL;
+  char *userPw = NULL;
+
+  PyArg_ParseTuple(args, "y*pppppppbzz", &pobj0,
+    &(config.clipText),
+    &(config.discardDiag),
+    &(config.discardRotatedText),
+    &(config.verbose),
+    &(config.quiet),
+    &(config.mode),
+    &(config.mapNumericCharNames),
+    &(config.mapUnknownCharNames),
+    &ownerPw,
+    &userPw
+  );
+  
+  char *pdf = (char *)pobj0->buf;
+  int len = pobj0->len;
+  Object *obj = new Object;
+  obj->initNull();
+  MemStream *str = new MemStream(pdf, 0, len, obj);
+  PdfLoader *loader = new PdfLoader(config, str, obj, pdf, ownerPw, userPw);
+
+  if (!loader->isOk()) {
+    checkError(loader, "string");
+    delete loader;
+    return NULL;
+  }
+
+  PyObject *loaderCapsule = PyCapsule_New((void *)loader, "loaderPtr", NULL);
+  PyCapsule_SetPointer(loaderCapsule, (void *)loader);
+  
+  return loaderCapsule;
+}
+
 PyObject *extractText(PyObject *self, PyObject *args) {
   vector<string> res;
   
