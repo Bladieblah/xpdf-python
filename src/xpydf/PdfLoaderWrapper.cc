@@ -77,7 +77,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
   char *ownerPw = NULL;
   char *userPw = NULL;
 
-  PyArg_ParseTuple(args, "Opppppppbzz", &pobj0,
+  PyArg_ParseTuple(args, "Oppppppppzz", &pobj0,
     &(config.clipText),
     &(config.discardDiag),
     &(config.discardRotatedText),
@@ -106,15 +106,16 @@ PyObject *construct(PyObject *self, PyObject *args) {
   return loaderCapsule;
 }
 
-PyObject *constructString(PyObject *self, PyObject *args) {
-  Py_buffer *pobj0;
+PyObject *constructBytes(PyObject *self, PyObject *args) {
+  PyObject *pobj0;
+  Py_buffer pbuff;
   Py_ssize_t size;
   LoaderConfig config;
 
   char *ownerPw = NULL;
   char *userPw = NULL;
 
-  PyArg_ParseTuple(args, "y*pppppppbzz", &pobj0,
+  PyArg_ParseTuple(args, "Oy*ppppppppzz", &pobj0, &pbuff,
     &(config.clipText),
     &(config.discardDiag),
     &(config.discardRotatedText),
@@ -127,15 +128,17 @@ PyObject *constructString(PyObject *self, PyObject *args) {
     &userPw
   );
   
-  char *pdf = (char *)pobj0->buf;
-  int len = pobj0->len;
+  char *fileName = (char *)PyUnicode_AsUTF8AndSize(pobj0, &size);
+  
+  char *pdf = (char *)pbuff.buf;
+  int len = pbuff.len;
   Object *obj = new Object;
   obj->initNull();
   MemStream *str = new MemStream(pdf, 0, len, obj);
   PdfLoader *loader = new PdfLoader(config, str, obj, pdf, ownerPw, userPw);
 
   if (!loader->isOk()) {
-    checkError(loader, "string");
+    checkError(loader, fileName);
     delete loader;
     return NULL;
   }
@@ -228,6 +231,10 @@ PyMethodDef cXpdfPythonFunctions[] = {
   {"construct",
     construct, METH_VARARGS,
     "Create `PdfLoader` object"},
+  
+  {"constructBytes",
+    constructBytes, METH_VARARGS,
+    "Create `PdfLoader` object from a byte string"},
   
   {"extractText",
     extractText, METH_VARARGS,

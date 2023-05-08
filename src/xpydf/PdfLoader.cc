@@ -93,7 +93,7 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *u
 PdfLoader::PdfLoader(LoaderConfig config, MemStream *str, Object *objA, char *dataA, char *ownerPw, char *userPw) {
   obj = objA;
   data = dataA;
-  needFree = true;
+  // needFree = true;
 
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
@@ -134,7 +134,7 @@ PdfLoader::PdfLoader(LoaderConfig config, MemStream *str, Object *objA, char *da
   if (userPw) {
     userPwGs = new GString(userPw);
   }
-    
+
   doc = new PDFDoc(str, ownerPwGs, userPwGs);
 
   if (ownerPwGs) {
@@ -258,14 +258,22 @@ int PdfLoader::getErrorCode() {
 }
 
 PdfLoader::~PdfLoader() {
-  if (textFileName)
+  if (textFileName) {
+    fprintf(stderr, "textFileName\n");
     delete textFileName;
-  if (doc)
+  }
+  if (doc) {
+    fprintf(stderr, "doc\n");
     delete doc;
-  if (obj)
+  }
+  if (obj) {
+    fprintf(stderr, "obj\n");
     delete obj;
-  if (needFree)
+  }
+  if (needFree) {
+    fprintf(stderr, "needFree\n");
     free(data);
+  }
 
   Object::memCheck(stderr);
   gMemReport(stderr);
