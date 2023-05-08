@@ -1,19 +1,25 @@
+import abc
+from typing import Any
 import unittest
 from pathlib import Path
 import numpy as np
 
-from xpydf.pdf_loader import PdfLoader
+from xpydf.pdf_loader import PdfLoader, PdfLoaderBytes
 
 DATA = Path(__file__).parent / "test_data"
 
 
-class TestPdfLoader(unittest.TestCase):
+class PdfLoaderTestAbstract(unittest.TestCase, abc.ABC):
+    @abc.abstractmethod
+    def get_loader(self, filename: str, **kwargs: Any) -> PdfLoader:
+        ...
+    
     def test_non_existent_file(self):
         with self.assertRaises(IOError):
             PdfLoader(str(DATA / "missing.pdf"))
 
     def test_text_extraction(self):
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
+        loader = self.get_loader("xpdf_tests.pdf")
 
         text = loader.extract_strings()
 
@@ -24,7 +30,7 @@ class TestPdfLoader(unittest.TestCase):
         self.assertEqual("XPyDF Testing", lines[0])
 
     def test_page_info(self):
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
+        loader = self.get_loader("xpdf_tests.pdf")
         page_info = loader.extract_page_info()
 
         self.assertEqual(2, len(page_info))
@@ -35,7 +41,7 @@ class TestPdfLoader(unittest.TestCase):
         self.assertEqual(792, page["height"])
 
     def test_info_extraction(self):
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
+        loader = self.get_loader("xpdf_tests.pdf")
         page_info = loader.extract_page_info()
         images = page_info[0]["images"]
 
@@ -51,7 +57,7 @@ class TestPdfLoader(unittest.TestCase):
         self.assertEqual(200, images[2]["height"])
     
     def test_image_extraction(self):
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
+        loader = self.get_loader("xpdf_tests.pdf")
         images = loader.extract_images(1)
         
         self.assertEqual(3, len(images))
@@ -83,35 +89,46 @@ class TestPdfLoader(unittest.TestCase):
         self.assertTrue(np.all(images[0] == 150))
     
     def test_modes(self):
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="table")
+        loader = self.get_loader("xpdf_tests.pdf", mode="table")
         text = loader.extract_strings()
         self.assertEqual(2, len(text))
 
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="simple")
+        loader = self.get_loader("xpdf_tests.pdf", mode="simple")
         text = loader.extract_strings()
         self.assertEqual(2, len(text))
 
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="lineprinter")
+        loader = self.get_loader("xpdf_tests.pdf", mode="lineprinter")
         text = loader.extract_strings()
         self.assertEqual(2, len(text))
 
-        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"), mode="physical")
+        loader = self.get_loader("xpdf_tests.pdf", mode="physical")
         text = loader.extract_strings()
         self.assertEqual(2, len(text))
     
     def test_password(self):
         with self.assertRaises(OSError):
-            PdfLoader(str(DATA / "xpdf_tests_password.pdf"))
-        
-        loader = PdfLoader(str(DATA / "xpdf_tests_password.pdf"), owner_password="ownerpassword")
+            loader = self.get_loader("xpdf_tests_password.pdf")
+
+        loader = self.get_loader("xpdf_tests_password.pdf", owner_password="ownerpassword")
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
         
-        loader = PdfLoader(str(DATA / "xpdf_tests_password.pdf"), user_password="userpassword")
+        loader = self.get_loader("xpdf_tests_password.pdf", user_password="userpassword")
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
         
-        loader = PdfLoader(str(DATA / "xpdf_tests_password.pdf"), owner_password="ownerpassword", user_password="userpassword")
+        loader = self.get_loader("xpdf_tests_password.pdf", owner_password="ownerpassword", user_password="userpassword")
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
-            
+
+class TestPdfLoader(PdfLoaderTestAbstract):
+    def get_loader(self, filename: str, **kwargs: Any) -> PdfLoader:
+        return PdfLoader(str(DATA / filename), **kwargs)
+
+class TestPdfLoaderBytes(PdfLoaderTestAbstract):
+    def get_loader(self, filename: str, **kwargs: Any) -> PdfLoader:
+        with open(str(DATA / filename), "rb") as f:
+            data = f.read()
+        return PdfLoaderBytes(filename, data, **kwargs)
+
+del PdfLoaderTestAbstract
