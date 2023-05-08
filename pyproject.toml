@@ -1,6 +1,6 @@
 [project]
 name = "xpydf"
-version = "0.1.2"
+version = "0.1.3"
 authors = [
     { name  = "Matthijs Wesseling", email = "matthijs.wesseling@bigdatarepublic.nl" },
 ]
@@ -23,8 +23,8 @@ dependencies = [
 
 [build-system]
 requires = [
-    "setuptools>=42",
-    "numpy == 1.21.6",
+    "setuptools >= 42",
+    "numpy >= 1.21.6",
 ]
 build-backend = "setuptools.build_meta"
 

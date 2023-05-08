@@ -7,3 +7,6 @@
 
 # Version 0.1.2 (8-may-2023)
  - Added image extraction
+
+# Version 0.1.2 (8-may-2023)
+ - Fix numpy dependency specification
