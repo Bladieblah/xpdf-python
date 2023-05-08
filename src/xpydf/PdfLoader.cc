@@ -259,19 +259,15 @@ int PdfLoader::getErrorCode() {
 
 PdfLoader::~PdfLoader() {
   if (textFileName) {
-    fprintf(stderr, "textFileName\n");
     delete textFileName;
   }
   if (doc) {
-    fprintf(stderr, "doc\n");
     delete doc;
   }
   if (obj) {
-    fprintf(stderr, "obj\n");
     delete obj;
   }
   if (needFree) {
-    fprintf(stderr, "needFree\n");
     free(data);
   }
 
