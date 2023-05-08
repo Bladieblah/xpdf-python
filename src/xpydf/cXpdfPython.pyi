@@ -19,6 +19,20 @@ def construct(
     ownerPw: Optional[str] = None,
     userPw: Optional[str] = None,
 ) -> XpdfPythonCapsule: ...
+def constructBytes(
+    filename: str,
+    data: bytes,
+    cliptext: bool,
+    discard_diag: bool,
+    discard_rotated_text: bool,
+    verbose: bool,
+    quiet: bool,
+    mode: int,
+    mapNumericCharNames: bool = False,
+    mapUnknownCharNames: bool = True,
+    ownerPw: Optional[str] = None,
+    userPw: Optional[str] = None,
+) -> XpdfPythonCapsule: ...
 def extractText(capsule: XpdfPythonCapsule) -> List[bytes]: ...
 def extractPageInfo(capsule: XpdfPythonCapsule) -> List[PageInfo]: ...
 def extractImages(capsule: XpdfPythonCapsule, page_number: int) -> List[npt.NDArray[Any]]: ...

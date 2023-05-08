@@ -73,7 +73,7 @@ class PdfLoader:
         filename : str
             Path to the pdf to load
         cliptext : bool, optional
-            _description_, by default False
+            Separate clipped text, by default False
         discard_diag : bool, optional
             Remove diagonal text, like watermarks, by default True
         discard_rotated_text : bool, optional
@@ -170,3 +170,63 @@ class PdfLoader:
         if self.capsule:
             cXpdfPython.deleteObject(self.capsule)
             del self.capsule
+
+class PdfLoaderBytes(PdfLoader):
+    def __init__(
+        self,
+        filename: str,
+        data: bytes,
+        cliptext: bool = False,
+        discard_diag: bool = True,
+        discard_rotated_text: bool = True,
+        verbose: bool = False,
+        quiet: bool = True,
+        mode: str = "table",
+        map_numeric_char_names: bool = False,
+        map_unknown_char_names: bool = True,
+        owner_password: Optional[str] = None,
+        user_password: Optional[str] = None,
+    ):
+        """Load a file for extraction.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the pdf to load
+        data : bytes
+            Binary pdf data
+        cliptext : bool, optional
+            Separate clipped text, by default False
+        discard_diag : bool, optional
+            Remove diagonal text, like watermarks, by default True
+        discard_rotated_text : bool, optional
+            Remove vertical text, by default True
+        verbose : bool, optional
+            Print per-page status information, by default False
+        quiet : bool, optional
+            Don't print any messages or errors, by default True
+        mapNumericCharNames : bool, optional
+            Don't print any messages or errors, by default True
+        mapUnknownCharNames : bool, optional
+            Don't print any messages or errors, by default True
+        mode : str, optional
+            Select the xpdf parsing mode, choices are:
+             - table (default): physical layout optimised for tables
+             - simple: simple one-column physical layout
+             - lineprinter: strict fixed-pitch/height layout
+             - physical: maintain original physical layout
+
+        Raises
+        ------
+        IOError
+            When the file is not found, or cannot be loaded
+        """
+        if mode not in xpdf_modes:
+            xpdf_mode = 0
+        else:
+            xpdf_mode = xpdf_modes[mode]
+
+        self.filename = filename
+        self.capsule = cXpdfPython.constructBytes(
+            filename, data, cliptext, discard_diag, discard_rotated_text, verbose, quiet, xpdf_mode, map_numeric_char_names, map_unknown_char_names, owner_password, user_password
+        )
