@@ -55,11 +55,11 @@ PyObject *construct(PyObject *self, PyObject *args) {
             break;
           case errBadCatalog: // couldn't read the page catalog
             snprintf(message, 1000, "Error parsing PDF catalog in file %s", fileName);
-            PyErr_SetString(PyExc_ImportError, message);
+            PyErr_SetString(PyExc_IOError, message);
             break;
           case errDamaged: // PDF file was damaged and couldn't be repaired
             snprintf(message, 1000, "Error parsing PDF file %s. File might be damaged", fileName);            
-            PyErr_SetString(PyExc_ImportError, message);
+            PyErr_SetString(PyExc_IOError, message);
             break;
           case errEncrypted: // file was encrypted and password was incorrect or not supplied
             snprintf(message, 1000, "Error decrypting PDF file %s", fileName);
@@ -83,7 +83,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
             break;
           case errBadPageNum: // invalid page number
             snprintf(message, 1000, "Error bad PDF page number in file %s", fileName);
-            PyErr_SetString(PyExc_ImportError, message);
+            PyErr_SetString(PyExc_IOError, message);
             break;
           case errFileIO: // file I/O error
             snprintf(message, 1000, "Error while read/write file %s", fileName);
