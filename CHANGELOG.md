@@ -8,5 +8,8 @@
 # Version 0.1.2 (8-may-2023)
  - Added image extraction
 
-# Version 0.1.2 (8-may-2023)
+# Version 0.1.3 (8-may-2023)
  - Fix numpy dependency specification
+
+# Version 0.1.4 (8-may-2023)
+ - PyPi is stupid
