@@ -101,3 +101,5 @@ $(OBJDIR)%.o: $(SPLASH_DIR)%.cc
 clean:
 	rm -fv $(PROGNAME) $(OBJFILES)
 	rm -fv $(OBJDIR)*.d
+
+-include $(OBJFILES:.o=.d)
