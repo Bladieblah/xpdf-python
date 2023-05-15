@@ -513,15 +513,24 @@ int AcroForm::lookupAnnotPage(Object *annotRef) {
 }
 
 void AcroForm::scanField(Object *fieldRef) {
+  int startDepth = depth;
+  depth++;
   AcroFormField *field;
   Object fieldObj, kidsObj, kidRef, kidObj, subtypeObj;
   GBool isTerminal;
   int i;
 
+  if (depth > maxDepth) {
+    error(errInternal, -1, "Recursion depth exceeded");
+    depth = startDepth;
+    return;
+  }
+
   fieldRef->fetch(doc->getXRef(), &fieldObj);
   if (!fieldObj.isDict()) {
     error(errSyntaxError, -1, "AcroForm field object is wrong type");
     fieldObj.free();
+    depth = startDepth;
     return;
   }
 
@@ -559,6 +568,7 @@ void AcroForm::scanField(Object *fieldRef) {
   }
 
   fieldObj.free();
+  depth = startDepth;
 }
 
 void AcroForm::draw(int pageNum, Gfx *gfx, GBool printing) {
