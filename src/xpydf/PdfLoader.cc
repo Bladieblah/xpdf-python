@@ -38,7 +38,6 @@ static void outputToStringStream(void *stream, const char *text, int len) {
 
 
 PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *userPw) {
-  fprintf(stderr, "globalParams\n");
   if (globalParams == NULL) {
     globalParams = new GlobalParams("");
   }
@@ -48,7 +47,6 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *u
   globalParams->setMapNumericCharNames(config.mapNumericCharNames);
   globalParams->setMapUnknownCharNames(config.mapUnknownCharNames);
 
-  fprintf(stderr, "switch\n");
   switch (config.mode) {
     default:
     case 0:
@@ -65,13 +63,11 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *u
       break;
   }
 
-  fprintf(stderr, "textOutControl\n");
   textOutControl.clipText = config.clipText;
   textOutControl.discardDiagonalText = config.discardDiag;
   textOutControl.discardRotatedText = config.discardRotatedText;
   textOutControl.insertBOM = config.insertBOM;
 
-  fprintf(stderr, "textFileName\n");
   textFileName = new GString(fileName);
 
   GString *ownerPwGs = NULL;
@@ -83,11 +79,9 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *u
   if (userPw) {
     userPwGs = new GString(userPw);
   }
-    
-  fprintf(stderr, "PDFDoc\n");
+
   doc = new PDFDoc(fileName, ownerPwGs, userPwGs);
 
-  fprintf(stderr, "ownerPwGs\n");
   if (ownerPwGs) {
     delete ownerPwGs;
   }
@@ -214,21 +208,4 @@ bool PdfLoader::isOk() {
 
 int PdfLoader::getErrorCode() {
   return (int)doc->getErrorCode();
-}
-
-int main() {
-  // char filename[100] = "fc96f406-777c-11eb-8637-005056a6ed7a.pdf";
-  char filename[100] = "pdf_segfault.pdf";
-  LoaderConfig config;
-  config.quiet = false;
-  PdfLoader loader = PdfLoader(config, filename);
-  fprintf(stderr, "%s\n", loader.isOk() ? "Loader ok" : "Loader Err");
-
-  std::vector<std::string> pages = loader.extractText();
-
-  for (size_t i = 0; i < pages.size(); i++) {
-    fprintf(stderr, "############################ PAGE %.3d ############################\n\n%s\n\n", i, pages[i].c_str());
-  }
-
-  return 0;
 }

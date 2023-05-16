@@ -273,9 +273,9 @@ GBool PDFDoc::setup(GString *ownerPassword, GString *userPassword) {
       // try repairing the xref table
       error(errSyntaxWarning, -1,
 	    "PDF file is damaged - attempting to reconstruct xref table...");
-      // if (!PDFDoc::setup2(ownerPassword, userPassword, gTrue)) {
+      if (!PDFDoc::setup2(ownerPassword, userPassword, gTrue)) {
 	return gFalse;
-      // }
+      }
     } else {
       return gFalse;
     }
