@@ -145,7 +145,10 @@ PyObject *extractImages(PyObject *self, PyObject *args) {
       array = PyArray_SimpleNewFromData(1, dims, NPY_UINT8, image.data);
       
       // Only reshape P6 images, P4 contain multiple pixels per byte
-      if (image.image_type == IMAGE_TYPES::P5) {
+      if (image.image_type == IMAGE_TYPES::P4) {
+        PyObject *shape = Py_BuildValue("ii", image.height, image.width);
+        array = PyArray_Reshape((PyArrayObject *)array, shape);
+      } else if (image.image_type == IMAGE_TYPES::P5) {
         PyObject *shape = Py_BuildValue("ii", image.height, image.width);
         array = PyArray_Reshape((PyArrayObject *)array, shape);
       } else if (image.image_type == IMAGE_TYPES::P6) {
