@@ -52,6 +52,8 @@ xpdf_files = [
     "PDFDocEncoding.cc",
     "PSTokenizer.cc",
     "SecurityHandler.cc",
+    "ShadingImage.cc",
+    "SplashOutputDev.cc",
     "Stream.cc",
     "TextOutputDev.cc",
     "TextString.cc",
