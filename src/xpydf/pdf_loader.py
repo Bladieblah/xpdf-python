@@ -166,6 +166,24 @@ class PdfLoader:
 
         return images
 
+    def page_to_image(self, page_number: int) -> Optional[npt.NDArray[Any]]:
+        """Convert a page to in image, as a numpy array.
+
+        Parameters
+        ----------
+        page_number : int
+            Page to convert
+
+        Returns
+        -------
+        npt.NDArray[Any]
+            Image data.
+        """
+        if self.capsule is not None:
+            return cXpdfPython.pageToImage(self.capsule, page_number)
+
+        return None
+
     def __del__(self):
         if self.capsule:
             cXpdfPython.deleteObject(self.capsule)
