@@ -16,3 +16,6 @@
 
 # Version 0.1.4.4 (16-may-2023)
  - Fix recursion error in XPDF
+
+# Version 0.1.5
+ - Improve PBM image conversion
