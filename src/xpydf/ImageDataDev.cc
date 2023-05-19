@@ -107,32 +107,42 @@ void ImageDataDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
     int width, int height, GBool invert,
     GBool inlineImg, GBool interpolate
 ) {
-  char buf[4096];
-  int size, n, i, m;
+  int size, bytesRead, pixelsRead;
+  int rowCount = 0;
+  char buf;
+
   Image image = {
     static_cast<unsigned int>(IMAGE_TYPES::P4),
     static_cast<unsigned int>(width),
     static_cast<unsigned int>(height),
-    static_cast<unsigned int>(height * ((width + 7) / 8)),
+    static_cast<unsigned int>(width * height),
     nullptr
   };
   
-  size = image.size;
+  size = height * ((width + 7) / 8);
   image.data = (unsigned char *)malloc(image.size * sizeof(unsigned char));
   imgNum++;
 
   str->reset();
-  m = 0;
+  pixelsRead = 0;
   while (size > 0) {
-    i = size < (int)sizeof(buf) ? size : (int)sizeof(buf);
-    n = str->getBlock(((char *)image.data) + m, i);
-    
-    if (n < i) {
+    bytesRead = str->getBlock(&buf, 1);
+
+    if (bytesRead == 0) {
       break;
     }
+
+    for (int i = 0; i < sizeof(char) * 8; i++) {
+      image.data[pixelsRead++] = buf & (128 >> i) ? 0xff : 0;
+      rowCount++;
+
+      if (rowCount == width || pixelsRead >= image.size) {
+        rowCount = 0;
+        break;
+      }
+    }
     
-    size -= n;
-    m += n;
+    size -= bytesRead;
   }
 
   str->close();
