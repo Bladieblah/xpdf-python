@@ -49,8 +49,6 @@ PDFDocEncoding.cc \
 PSTokenizer.cc \
 SecurityHandler.cc \
 ShadingImage.cc \
-Splash.cc \
-SplashBitmap.cc \
 SplashOutputDev.cc \
 Stream.cc \
 TextOutputDev.cc \

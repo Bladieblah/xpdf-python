@@ -48,6 +48,7 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *u
   globalParams->setErrQuiet(config.quiet);
   globalParams->setMapNumericCharNames(config.mapNumericCharNames);
   globalParams->setMapUnknownCharNames(config.mapUnknownCharNames);
+  globalParams->setupBaseFonts(NULL);
 
   switch (config.mode) {
     default:
@@ -264,13 +265,13 @@ int main() {
   PdfLoader loader = PdfLoader(config, filename);
   fprintf(stderr, "%s\n", loader.isOk() ? "Loader ok" : "Loader Err");
 
-  std::vector<std::string> pages = loader.extractText();
+  // std::vector<std::string> pages = loader.extractText();
 
-  for (size_t i = 0; i < pages.size(); i++) {
-    // fprintf(stderr, "############################ PAGE %.3d ############################\n\n%s\n\n", i, pages[i].c_str());
-    fprintf(stderr, "############################ PAGE %.3d ############################\n\n", i);
-    std::vector<Image> images = loader.extractImages(i+1);
-  }
+  // for (size_t i = 0; i < pages.size(); i++) {
+  //   // fprintf(stderr, "############################ PAGE %.3zu ############################\n\n%s\n\n", i, pages[i].c_str());
+  //   fprintf(stderr, "############################ PAGE %.3zu ############################\n\n", i);
+  //   std::vector<Image> images = loader.extractImages(i+1);
+  // }
 
   Image page = loader.pageToImage(1);
   fprintf(stderr, "Image shape %d x %d\n", page.width, page.height);
