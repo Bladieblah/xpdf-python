@@ -14,9 +14,8 @@ SPLASH_SRC = $(wildcard $(SPLASH_DIR)*.cc)
 FOFI_SRC = $(wildcard $(FOFI_DIR)*.cc)
 
 XPDF_FILES = AcroForm.cc \
-Array.cc \
-Stream.cc \
 Annot.cc \
+Array.cc \
 BuiltinFont.cc \
 BuiltinFontTables.cc \
 Catalog.cc \
@@ -49,6 +48,10 @@ PDFDoc.cc \
 PDFDocEncoding.cc \
 PSTokenizer.cc \
 SecurityHandler.cc \
+Splash.cc \
+SplashBitmap.cc \
+SplashOutputDev.cc \
+Stream.cc \
 TextOutputDev.cc \
 TextString.cc \
 UnicodeMap.cc \
@@ -68,7 +71,8 @@ SRC = $(PY_SRC) $(SPLASH_SRC) $(FOFI_SRC)
 
 CC = g++ -std=c++17
 
-WARNFLAGS = -Wall -Wno-deprecated-declarations -Wno-writable-strings
+WARNFLAGS = -Wall
+#  -Wno-deprecated-declarations -Wno-writable-strings
 CFLAGS = -g -O3 $(WARNFLAGS) -MD -Isrc/xpdf-4.04 -Isrc/xpdf-4.04/goo -Isrc/xpdf-4.04/splash -Isrc/xpdf-4.04/xpdf -Isrc/xpdf-4.04/fofi -I/usr/local/include
 # LDFLAGS =-framework opencl -framework GLUT -framework OpenGL -framework Cocoa -L/usr/local/lib -lGLEW
 

@@ -6,26 +6,28 @@
 #include <sstream>
 #include <vector>
 
-#include "gmem.h"
-#include "gmempp.h"
-#include "parseargs.h"
-#include "GString.h"
+#include "Array.h"
+#include "Catalog.h"
+#include "CharTypes.h"
+#include "config.h"
+#include "Dict.h"
+#include "Error.h"
 #include "GList.h"
 #include "GlobalParams.h"
+#include "gmem.h"
+#include "gmempp.h"
+#include "GString.h"
 #include "Object.h"
-#include "Stream.h"
-#include "Array.h"
-#include "Dict.h"
-#include "XRef.h"
-#include "Catalog.h"
 #include "Page.h"
+#include "parseargs.h"
 #include "PDFDoc.h"
+#include "Stream.h"
+#include "SplashBitmap.h"
+#include "SplashOutputDev.h"
 #include "TextOutputDev.h"
-#include "CharTypes.h"
-#include "UnicodeMap.h"
 #include "TextString.h"
-#include "Error.h"
-#include "config.h"
+#include "UnicodeMap.h"
+#include "XRef.h"
 
 #include "PdfLoader.h"
 #include "ImageDataDev.h"
@@ -199,6 +201,49 @@ std::vector<Image> PdfLoader::extractImages(int pageNum) {
   return images;
 }
 
+Image PdfLoader::pageToImage(int pageNum) {
+  Image pageImage;
+  SplashColor paperColor;
+  SplashOutputDev *splashOut;
+  SplashBitmap *bitmap;
+  bool pngAlpha = false;
+
+  if (!doc->isOk()) {
+    goto err;
+  }
+  
+  paperColor[0] = paperColor[1] = paperColor[2] = 0xff;
+  splashOut = new SplashOutputDev(splashModeRGB8, 1, gFalse, paperColor);
+  if (pngAlpha)
+  {
+    splashOut->setNoComposite(gTrue);
+  }
+  
+  splashOut->startDoc(doc->getXRef());
+
+  doc->displayPages(splashOut, pageNum, pageNum, 72, 72, 0, gFalse, gTrue, gFalse);
+  bitmap = splashOut->getBitmap();
+  
+  pageImage = {
+    static_cast<unsigned int>(IMAGE_TYPES::P6),
+    static_cast<unsigned int>(bitmap->getWidth()),
+    static_cast<unsigned int>(bitmap->getHeight()),
+    static_cast<unsigned int>(3 * bitmap->getWidth() * bitmap->getHeight()),
+    nullptr
+  };
+
+  pageImage.data = (unsigned char *)malloc(pageImage.size * sizeof(unsigned char));
+  memcpy(pageImage.data, bitmap->getDataPtr(), pageImage.size);
+
+  delete splashOut;
+ err:
+
+  Object::memCheck(stderr);
+  gMemReport(stderr);
+
+  return pageImage;
+}
+
 bool PdfLoader::isOk() {
   if (!doc) {
     return false;
@@ -208,4 +253,28 @@ bool PdfLoader::isOk() {
 
 int PdfLoader::getErrorCode() {
   return (int)doc->getErrorCode();
+}
+
+int main() {
+  // char filename[100] = "fc96f406-777c-11eb-8637-005056a6ed7a.pdf";
+  // char filename[100] = "../NL-PDF-Extractietool/data/input/9999748983.pdf";
+  char filename[100] = "../NL-PDF-Extractietool/data/input/Hamonterweg 19 VO+aanv 13-03-2014 Tritium 1401076TB-01.pdf";
+  LoaderConfig config;
+  config.quiet = false;
+  PdfLoader loader = PdfLoader(config, filename);
+  fprintf(stderr, "%s\n", loader.isOk() ? "Loader ok" : "Loader Err");
+
+  std::vector<std::string> pages = loader.extractText();
+
+  for (size_t i = 0; i < pages.size(); i++) {
+    // fprintf(stderr, "############################ PAGE %.3d ############################\n\n%s\n\n", i, pages[i].c_str());
+    fprintf(stderr, "############################ PAGE %.3d ############################\n\n", i);
+    std::vector<Image> images = loader.extractImages(i+1);
+  }
+
+  Image page = loader.pageToImage(1);
+  fprintf(stderr, "Image shape %d x %d\n", page.width, page.height);
+
+
+  return 0;
 }

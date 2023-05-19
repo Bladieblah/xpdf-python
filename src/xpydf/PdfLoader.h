@@ -38,6 +38,7 @@ public:
     std::vector<std::string> extractText();
     std::vector<PageImageInfo> extractPageInfo();
     std::vector<Image> extractImages(int pageNum);
+    Image pageToImage(int pageNum);
     bool isOk();
     int getErrorCode();
 private:
