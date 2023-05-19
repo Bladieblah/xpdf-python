@@ -74,11 +74,9 @@ CC = g++ -std=c++17
 WARNFLAGS = -Wall
 #  -Wno-deprecated-declarations -Wno-writable-strings
 CFLAGS = -g -O3 $(WARNFLAGS) -MD -Isrc/xpdf-4.04 -Isrc/xpdf-4.04/goo -Isrc/xpdf-4.04/splash -Isrc/xpdf-4.04/xpdf -Isrc/xpdf-4.04/fofi -I/usr/local/include
-# LDFLAGS =-framework opencl -framework GLUT -framework OpenGL -framework Cocoa -L/usr/local/lib -lGLEW
 
 # Do some substitution to get a list of .o files from the given .cc files.
 OBJFILES = $(patsubst $(PYDIR)%.cc, $(OBJDIR)%.o, $(PY_SRC)) $(patsubst $(SPLASH_DIR)%.cc, $(OBJDIR)%.o, $(SPLASH_SRC)) $(patsubst $(FOFI_DIR)%.cc, $(OBJDIR)%.o, $(FOFI_SRC)) $(XPDF_FILES:%.cc=$(OBJDIR)%.o) $(GOO_FILES:%.cc=$(OBJDIR)%.o)
-# INCFILES = $(patsubst $(SRCDIR)%.cc, $(INCDIR)%.hpp, $(SRC))
 
 .PHONY: all clean
 
