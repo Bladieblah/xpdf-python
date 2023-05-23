@@ -114,4 +114,14 @@ class TestPdfLoader(unittest.TestCase):
         loader = PdfLoader(str(DATA / "xpdf_tests_password.pdf"), owner_password="ownerpassword", user_password="userpassword")
         text = loader.extract_strings()
         self.assertEqual(1, len(text))
-            
+    
+    def test_page_to_image(self):
+        loader = PdfLoader(str(DATA / "xpdf_tests.pdf"))
+        page = loader.page_to_image(1, 150)
+        page_high_res = loader.page_to_image(1, 300)
+
+        self.assertEqual(3, len(page.shape))
+        self.assertEqual(3, len(page_high_res.shape))
+        self.assertEqual(2 * page.shape[0], page_high_res.shape[0])
+        self.assertEqual(2 * page.shape[1], page_high_res.shape[1])
+        self.assertEqual(page.shape[2], page_high_res.shape[2])
