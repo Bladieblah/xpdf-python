@@ -166,11 +166,11 @@ PyObject *pageToImage(PyObject *self, PyObject *args) {
     vector<string> res;
     
     PyObject *loaderCapsule;
-    int pageNum;
-    PyArg_ParseTuple(args, "Oi", &loaderCapsule, &pageNum);
+    int pageNum, dpi;
+    PyArg_ParseTuple(args, "Oii", &loaderCapsule, &pageNum, &dpi);
 
     PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
-    Image pageImage = loader->pageToImage(pageNum);
+    Image pageImage = loader->pageToImage(pageNum, dpi);
     
     PyObject *array;
     

@@ -202,7 +202,7 @@ std::vector<Image> PdfLoader::extractImages(int pageNum) {
   return images;
 }
 
-Image PdfLoader::pageToImage(int pageNum) {
+Image PdfLoader::pageToImage(int pageNum, int dpi) {
   Image pageImage;
   SplashColor paperColor;
   SplashOutputDev *splashOut;
@@ -222,7 +222,7 @@ Image PdfLoader::pageToImage(int pageNum) {
   
   splashOut->startDoc(doc->getXRef());
 
-  doc->displayPages(splashOut, pageNum, pageNum, 72, 72, 0, gFalse, gTrue, gFalse);
+  doc->displayPages(splashOut, pageNum, pageNum, dpi, dpi, 0, gFalse, gTrue, gFalse);
   bitmap = splashOut->getBitmap();
   
   pageImage = {
@@ -254,28 +254,4 @@ bool PdfLoader::isOk() {
 
 int PdfLoader::getErrorCode() {
   return (int)doc->getErrorCode();
-}
-
-int main() {
-  // char filename[100] = "fc96f406-777c-11eb-8637-005056a6ed7a.pdf";
-  // char filename[100] = "../NL-PDF-Extractietool/data/input/9999748983.pdf";
-  char filename[100] = "../NL-PDF-Extractietool/data/input/Hamonterweg 19 VO+aanv 13-03-2014 Tritium 1401076TB-01.pdf";
-  LoaderConfig config;
-  config.quiet = false;
-  PdfLoader loader = PdfLoader(config, filename);
-  fprintf(stderr, "%s\n", loader.isOk() ? "Loader ok" : "Loader Err");
-
-  // std::vector<std::string> pages = loader.extractText();
-
-  // for (size_t i = 0; i < pages.size(); i++) {
-  //   // fprintf(stderr, "############################ PAGE %.3zu ############################\n\n%s\n\n", i, pages[i].c_str());
-  //   fprintf(stderr, "############################ PAGE %.3zu ############################\n\n", i);
-  //   std::vector<Image> images = loader.extractImages(i+1);
-  // }
-
-  Image page = loader.pageToImage(1);
-  fprintf(stderr, "Image shape %d x %d\n", page.width, page.height);
-
-
-  return 0;
 }
