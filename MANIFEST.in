@@ -1,5 +1,10 @@
+include src/freetype/src/*/*.c
+include src/freetype/include/*.h
+include src/freetype/include/freetype/*.h
+include src/freetype/include/freetype/config/*.h
+include src/freetype/include/freetype/internal/*.h
 include src/xpydf/*
 include src/xpdf-4.04/**
 include src/xpdf-4.04/**/*.cc
 include src/xpdf-4.04/**/*.h
-include *.pyi
+include src/xpydf/*.pyi
