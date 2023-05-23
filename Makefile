@@ -1,4 +1,13 @@
 PROGNAME = a.out
+OBJDIR = obj/
+
+CC = g++ -std=c++17
+C = gcc -pedantic -std=c99
+WARNFLAGS = -Wall
+#  -Wno-deprecated-declarations -Wno-writable-strings
+CCFLAGS = -O3 $(WARNFLAGS) -MD -Isrc/xpdf-4.04 -Isrc/xpdf-4.04/goo -Isrc/xpdf-4.04/splash -Isrc/xpdf-4.04/xpdf -Isrc/xpdf-4.04/fofi -I/usr/local/include -Isrc/freetype/include  -Isrc/freetype/include/freetype
+CFLAGS =  -O3 $(WARNFLAGS) -MD -pthread -DFT_CONFIG_CONFIG_H="<ftconfig.h>" -DFT_CONFIG_MODULES_H="<ftmodule.h>" -DFT_CONFIG_OPTIONS_H="<ftoption.h>" -DFT2_BUILD_LIBRARY -Isrc/freetype/include -Isrc/freetype/include/freetype -Isrc/freetype/include/freetype/config  -Isrc/freetype/include/freetype/internal
+
 PYDIR = src/xpydf/
 
 XDIR = src/xpdf-4.04/
@@ -6,8 +15,6 @@ SPLASH_DIR = $(XDIR)splash/
 FOFI_DIR = $(XDIR)fofi/
 GOO_DIR = $(XDIR)goo/
 XPDF_DIR = $(XDIR)xpdf/
-
-OBJDIR = obj/
 
 PY_SRC = src/xpydf/PdfLoader.cc src/xpydf/ImageInfoDev.cc src/xpydf/ImageDataDev.cc
 SPLASH_SRC = $(wildcard $(SPLASH_DIR)*.cc)
@@ -63,44 +70,101 @@ Zoox.cc
 
 GOO_FILES = gmem.cc gmempp.cc gfile.cc GHash.cc GList.cc GString.cc
 
-XPDF_SRC = $(XPDF_FILES:%.cc=$(XDIR)/xpdf/%.cc)
-GOO_SRC = $(GOO_FILES:%.cc=$(XDIR)/goo/%.cc)
+FDIR = src/freetype/src/
+FREE_DIRS = $(wildcard $(FDIR)*/)
 
-SRC = $(PY_SRC) $(SPLASH_SRC) $(FOFI_SRC)
+FREE_OBJ = autofit.o \
+bdf.o \
+cff.o \
+dlgwrap.o \
+ft-hb.o \
+ftbase.o \
+ftbbox.o \
+ftbdf.o \
+ftbitmap.o \
+ftbzip2.o \
+ftcache.o \
+ftcid.o \
+ftdebug.o \
+ftfstype.o \
+ftgasp.o \
+ftglyph.o \
+ftgxval.o \
+ftgzip.o \
+ftinit.o \
+ftlzw.o \
+ftmm.o \
+ftotval.o \
+ftpatent.o \
+ftpfr.o \
+ftstroke.o \
+ftsynth.o \
+ftsystem.o \
+fttype1.o \
+ftwinfnt.o \
+gxvalid.o \
+otvalid.o \
+pcf.o \
+pfr.o \
+psaux.o \
+pshinter.o \
+psnames.o \
+raster.o \
+sdf.o \
+sfnt.o \
+smooth.o \
+svg.o \
+truetype.o \
+type1.o \
+type1cid.o \
+type42.o \
+winfnt.o
 
-CC = g++ -std=c++17
-
-WARNFLAGS = -Wall
-#  -Wno-deprecated-declarations -Wno-writable-strings
-CFLAGS = -O3 $(WARNFLAGS) -MD -Isrc/xpdf-4.04 -Isrc/xpdf-4.04/goo -Isrc/xpdf-4.04/splash -Isrc/xpdf-4.04/xpdf -Isrc/xpdf-4.04/fofi -I/usr/local/include
 
 # Do some substitution to get a list of .o files from the given .cc files.
-OBJFILES = $(patsubst $(PYDIR)%.cc, $(OBJDIR)%.o, $(PY_SRC)) $(patsubst $(SPLASH_DIR)%.cc, $(OBJDIR)%.o, $(SPLASH_SRC)) $(patsubst $(FOFI_DIR)%.cc, $(OBJDIR)%.o, $(FOFI_SRC)) $(XPDF_FILES:%.cc=$(OBJDIR)%.o) $(GOO_FILES:%.cc=$(OBJDIR)%.o)
+OBJFILES = $(patsubst $(PYDIR)%.cc, $(OBJDIR)%.o, $(PY_SRC)) \
+$(patsubst $(SPLASH_DIR)%.cc, $(OBJDIR)%.o, $(SPLASH_SRC)) \
+$(patsubst $(FOFI_DIR)%.cc, $(OBJDIR)%.o, $(FOFI_SRC)) \
+$(XPDF_FILES:%.cc=$(OBJDIR)%.o) \
+$(GOO_FILES:%.cc=$(OBJDIR)%.o) \
+$(FREE_OBJ:%.o=$(OBJDIR)%.o)
+
+vpath %.c $(FREE_DIRS)
 
 .PHONY: all clean
 
 all: $(PROGNAME)
 
 $(PROGNAME): $(OBJFILES)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CCFLAGS) -o $@ $^
 
 $(OBJDIR)%.o: $(PYDIR)%.cc
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CCFLAGS) -o $@ $<
 
 $(OBJDIR)%.o: $(XPDF_DIR)%.cc
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CCFLAGS) -o $@ $<
 
 $(OBJDIR)%.o: $(GOO_DIR)%.cc
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CCFLAGS) -o $@ $<
 
 $(OBJDIR)%.o: $(FOFI_DIR)%.cc
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CCFLAGS) -o $@ $<
 
 $(OBJDIR)%.o: $(SPLASH_DIR)%.cc
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CCFLAGS) -o $@ $<
+
+$(OBJDIR)%.o: %.c
+	$(C) -c $(CFLAGS) -o $@ $<
 
 clean:
 	rm -fv $(PROGNAME) $(OBJFILES)
 	rm -fv $(OBJDIR)*.d
+
+cleanft:
+	rm -fv $(PROGNAME) $(FREE_OBJ)
+
+test:
+	$(info $(FREE_DIRS))
+	$(info $(SKIP_DIRS))
 
 -include $(OBJFILES:.o=.d)
