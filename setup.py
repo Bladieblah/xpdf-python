@@ -152,7 +152,6 @@ cXpdfPython = Extension(
         ("FT_CONFIG_MODULES_H", "<ftmodule.h>"),
         ("FT_CONFIG_OPTIONS_H", "<ftoption.h>"),
     ],
-
 )
 
 class custom_build_ext(build_ext):
