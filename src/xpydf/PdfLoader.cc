@@ -26,6 +26,8 @@
 #include "TextString.h"
 #include "Error.h"
 #include "config.h"
+#include "SplashOutputDev.h"
+#include "SplashBitmap.h"
 
 #include "PdfLoader.h"
 #include "ImageDataDev.h"
@@ -46,6 +48,7 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *u
   globalParams->setErrQuiet(config.quiet);
   globalParams->setMapNumericCharNames(config.mapNumericCharNames);
   globalParams->setMapUnknownCharNames(config.mapUnknownCharNames);
+  globalParams->setupBaseFonts(NULL);
 
   switch (config.mode) {
     default:
@@ -197,6 +200,49 @@ std::vector<Image> PdfLoader::extractImages(int pageNum) {
   gMemReport(stderr);
 
   return images;
+}
+
+Image PdfLoader::pageToImage(int pageNum, int dpi) {
+  Image pageImage;
+  SplashColor paperColor;
+  SplashOutputDev *splashOut;
+  SplashBitmap *bitmap;
+  bool pngAlpha = false;
+
+  if (!doc->isOk()) {
+    goto err;
+  }
+  
+  paperColor[0] = paperColor[1] = paperColor[2] = 0xff;
+  splashOut = new SplashOutputDev(splashModeRGB8, 1, gFalse, paperColor);
+  if (pngAlpha)
+  {
+    splashOut->setNoComposite(gTrue);
+  }
+  
+  splashOut->startDoc(doc->getXRef());
+
+  doc->displayPages(splashOut, pageNum, pageNum, dpi, dpi, 0, gFalse, gTrue, gFalse);
+  bitmap = splashOut->getBitmap();
+  
+  pageImage = {
+    static_cast<unsigned int>(IMAGE_TYPES::P6),
+    static_cast<unsigned int>(bitmap->getWidth()),
+    static_cast<unsigned int>(bitmap->getHeight()),
+    static_cast<unsigned int>(3 * bitmap->getWidth() * bitmap->getHeight()),
+    nullptr
+  };
+
+  pageImage.data = (unsigned char *)malloc(pageImage.size * sizeof(unsigned char));
+  memcpy(pageImage.data, bitmap->getDataPtr(), pageImage.size);
+
+  delete splashOut;
+ err:
+
+  Object::memCheck(stderr);
+  gMemReport(stderr);
+
+  return pageImage;
 }
 
 bool PdfLoader::isOk() {
