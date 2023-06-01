@@ -92,7 +92,7 @@
 /*
  * This is defined if using FreeType 2.
  */
-#define HAVE_FREETYPE_H 0
+#define HAVE_FREETYPE_H 1
 
 /*
  * This is defined if using D-Type 4.

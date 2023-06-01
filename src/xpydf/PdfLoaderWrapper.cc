@@ -162,6 +162,27 @@ PyObject *extractImages(PyObject *self, PyObject *args) {
     return Py_BuildValue("O", imageList);
 }
 
+PyObject *pageToImage(PyObject *self, PyObject *args) {
+    vector<string> res;
+    
+    PyObject *loaderCapsule;
+    int pageNum, dpi;
+    PyArg_ParseTuple(args, "Oii", &loaderCapsule, &pageNum, &dpi);
+
+    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
+    Image pageImage = loader->pageToImage(pageNum, dpi);
+    
+    PyObject *array;
+    
+    npy_intp dims[1] = {pageImage.size};
+    array = PyArray_SimpleNewFromData(1, dims, NPY_UINT8, pageImage.data);
+    
+    PyObject *shape = Py_BuildValue("iii", pageImage.height, pageImage.width, 3);
+    array = PyArray_Reshape((PyArrayObject *)array, shape);
+
+    return Py_BuildValue("O", array);
+}
+
 PyObject *deleteObject(PyObject *self, PyObject *args) {
     PyObject *loaderCapsule;
     PyArg_ParseTuple(args, "O", &loaderCapsule);
@@ -197,6 +218,10 @@ PyMethodDef cXpdfPythonFunctions[] = {
     {"extractImages",
       extractImages, METH_VARARGS,
      "Extract images"},
+    
+    {"pageToImage",
+      pageToImage, METH_VARARGS,
+     "Convert a page to an image"},
     
     {"deleteObject",
       deleteObject, METH_VARARGS,
