@@ -1385,8 +1385,7 @@ void TextPage::updateFont(GfxState *state) {
     diagonal = fabs(m[0]) > diagonalThreshold * fabs(m[1]);
   }
   // this matches the 'horiz' test in SplashOutputDev::drawChar()
-  rotated = !(m[0] > 0 && fabs(m[1]) < 0.001 &&
-	      fabs(m[2]) < 0.001 && m[3] < 0);
+  rotated = !(m[0] > 0 && (fabs(m[1]) < 0.001 || fabs(m[2]) < 0.001) && m[3] < 0);
 }
 
 void TextPage::addChar(GfxState *state, double x, double y,
