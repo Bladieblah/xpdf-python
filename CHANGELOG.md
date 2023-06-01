@@ -18,4 +18,6 @@
  - Fix recursion error in XPDF
 
 # Version 0.1.5
- - Improve PBM image conversion
+ - Improve PBM image conversion in extract_images
+ - Implement pdftopng functionality
+ - Fix skew matrices being detected as rotated text

@@ -1,6 +1,6 @@
 [project]
 name = "xpydf"
-version = "0.1.4.4"
+version = "0.1.5"
 authors = [
     { name  = "Matthijs Wesseling", email = "matthijs.wesseling@bigdatarepublic.nl" },
 ]
