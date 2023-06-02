@@ -17,7 +17,9 @@
 # Version 0.1.4.4 (16-may-2023)
  - Fix recursion error in XPDF
 
-# Version 0.1.5
+# Version 0.1.5 (02-jun-2023)
  - Improve PBM image conversion in extract_images
- - Implement pdftopng functionality
  - Fix skew matrices being detected as rotated text
+
+# Version 0.1.6
+ - Implement pdftopng functionality
