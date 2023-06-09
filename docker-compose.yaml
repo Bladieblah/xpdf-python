@@ -1,0 +1,11 @@
+version: '3'
+services:
+  api:
+    container_name: xpydf
+    build:
+      dockerfile: Dockerfile
+      context: .
+    volumes:
+      - .:/app
+    tty: true
+    entrypoint: bash
