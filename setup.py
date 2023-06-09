@@ -1,6 +1,8 @@
 import os
 from glob import glob
 from pathlib import Path
+from pprint import pprint
+from sys import stderr
 import numpy as np
 
 from setuptools.command.build_ext import build_ext
@@ -158,7 +160,12 @@ class custom_build_ext(build_ext):
     def build_extensions(self):
         # Force building all files with clang++, cannot combine clang and clang++ I think :'(
         # It'll throw some deprecation warnings but eh, it works
-        self.compiler.set_executable("compiler_so", "clang++ -std=c++11 -Wno-deprecated -Wno-unused-result -Wsign-compare -Wunreachable-code -fno-common -dynamic -DNDEBUG -g -fwrapv -O3 -Wall -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.sdk")
+        compiler = self.compiler.compiler_cxx[:1] + self.compiler.compiler_so[1:] + ["-std=c++11"]
+        # self.compiler.set_executable("compiler_so", "clang++ -std=c++11 -Wno-deprecated -Wno-unused-result -Wsign-compare -Wunreachable-code -fno-common -dynamic -DNDEBUG -g -fwrapv -O3 -Wall -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.sdk")
+        self.compiler.set_executable("compiler_so", " ".join(compiler))
+        print("\n\n\nCOMPILER\n\n")
+        print(self.compiler.compiler_so)
+        pprint(self.compiler.__dict__)
         build_ext.build_extensions(self)
 
 setup(ext_modules=[cXpdfPython], cmdclass={"build_ext": custom_build_ext})
