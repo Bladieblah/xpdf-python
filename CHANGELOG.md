@@ -21,5 +21,5 @@
  - Improve PBM image conversion in extract_images
  - Fix skew matrices being detected as rotated text
 
-# Version 0.1.6
+# Version 0.1.6 (09-jun-2023)
  - Implement pdftopng functionality
