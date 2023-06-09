@@ -132,7 +132,7 @@ void ImageDataDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
       break;
     }
 
-    for (int i = 0; i < sizeof(char) * 8; i++) {
+    for (size_t i = 0; i < sizeof(char) * 8; i++) {
       image.data[pixelsRead++] = buf & (128 >> i) ? 0xff : 0;
       rowCount++;
 
