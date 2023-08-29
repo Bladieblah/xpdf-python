@@ -157,10 +157,6 @@ cXpdfPython = Extension(
 
 class custom_build_ext(build_ext):
     def build_extensions(self):
-        # Force building all files as c++, cannot combine multiple compilers I think :'(
-        # It's deprecated behaviour, but eh
-        compiler = self.compiler.compiler_cxx[:1] + self.compiler.compiler_so[1:]
-        self.compiler.set_executable("compiler_so", " ".join(compiler))
         build_ext.build_extensions(self)
 
 setup(ext_modules=[cXpdfPython], cmdclass={"build_ext": custom_build_ext})
