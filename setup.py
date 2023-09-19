@@ -166,5 +166,4 @@ class custom_build_ext(build_ext):
             pass
         build_ext.build_extensions(self)
 
-# setup(ext_modules=[cXpdfPython], cmdclass={"build_ext": custom_build_ext})
-setup(ext_modules=[cXpdfPython])
+setup(ext_modules=[cXpdfPython], cmdclass={"build_ext": custom_build_ext})
