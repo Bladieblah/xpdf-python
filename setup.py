@@ -128,13 +128,15 @@ freetype_include = [
 
 if os.name == 'nt':
     linker_libs = ['Ole32','AdvAPI32','shell32']
+    extra_compile_args = [ "-DFT2_BUILD_LIBRARY", "/std:c++latest" ]
 else:
     linker_libs = []
+    extra_compile_args = [ "-DFT2_BUILD_LIBRARY", "-std=c++11" ]
     
 cXpdfPython = Extension(
     "cXpdfPython",
-    sources=python_src + xpdf_src + splash_src + goo_src + fofi_src + freetype_sources,
-    include_dirs=[
+    sources = python_src + xpdf_src + splash_src + goo_src + fofi_src + freetype_sources,
+    include_dirs = [
         "src/xpdf-4.04",
         str(xpdf_dir),
         str(fofi_dir),
@@ -145,11 +147,8 @@ cXpdfPython = Extension(
         *freetype_include,
     ],
     libraries = linker_libs,
-    extra_compile_args=[
-        "-DFT2_BUILD_LIBRARY",
-        "-std=c++11"
-    ],
-    define_macros=[
+    extra_compile_args = extra_compile_args,
+    define_macros = [
         ("FT_CONFIG_MODULES_H", "<ftmodule.h>"),
         ("FT_CONFIG_OPTIONS_H", "<ftoption.h>"),
     ],
