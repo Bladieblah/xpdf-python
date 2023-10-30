@@ -203,38 +203,6 @@ static inline double dmax(double x, double y) {
 // TextChar
 //------------------------------------------------------------------------
 
-class TextChar {
-public:
-
-  TextChar(Unicode cA, int charPosA, int charLenA,
-	   double xMinA, double yMinA, double xMaxA, double yMaxA,
-	   int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
-	   TextFontInfo *fontA, double fontSizeA,
-	   double colorRA, double colorGA, double colorBA);
-
-  static int cmpX(const void *p1, const void *p2);
-  static int cmpY(const void *p1, const void *p2);
-  static int cmpCharPos(const void *p1, const void *p2);
-
-  Unicode c;
-  int charPos;
-  int charLen;
-  double xMin, yMin, xMax, yMax;
-  TextFontInfo *font;
-  double fontSize;
-  double colorR,
-         colorG,
-         colorB;
-
-  // group the byte-size fields to minimize object size
-  Guchar rot;
-  char rotated;
-  char clipped;
-  char invisible;
-  char spaceAfter;
-  char overlap;
-};
-
 TextChar::TextChar(Unicode cA, int charPosA, int charLenA,
 		   double xMinA, double yMinA, double xMaxA, double yMaxA,
 		   int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
@@ -1483,6 +1451,9 @@ void TextPage::addChar(GfxState *state, double x, double y,
 
   // add the characters
   if (uBufLen > 0) {
+
+    Ref *ref = state->getFont()->getID();
+    fprintf(stderr, "Adding %d characters of font (%d, %d) at size %.1f\n", uBufLen, ref->gen, ref->num, state->getFontSize());
 
     // handle right-to-left ligatures: if there are multiple Unicode
     // characters, and they're all right-to-left, insert them in

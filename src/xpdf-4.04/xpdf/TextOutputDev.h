@@ -35,6 +35,42 @@ class TextPage;
 typedef void (*TextOutputFunc)(void *stream, const char *text, int len);
 
 //------------------------------------------------------------------------
+// TextChar
+//------------------------------------------------------------------------
+
+class TextChar {
+public:
+
+  TextChar(Unicode cA, int charPosA, int charLenA,
+	   double xMinA, double yMinA, double xMaxA, double yMaxA,
+	   int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
+	   TextFontInfo *fontA, double fontSizeA,
+	   double colorRA, double colorGA, double colorBA);
+
+  static int cmpX(const void *p1, const void *p2);
+  static int cmpY(const void *p1, const void *p2);
+  static int cmpCharPos(const void *p1, const void *p2);
+
+  Unicode c;
+  int charPos;
+  int charLen;
+  double xMin, yMin, xMax, yMax;
+  TextFontInfo *font;
+  double fontSize;
+  double colorR,
+         colorG,
+         colorB;
+
+  // group the byte-size fields to minimize object size
+  Guchar rot;
+  char rotated;
+  char clipped;
+  char invisible;
+  char spaceAfter;
+  char overlap;
+};
+
+//------------------------------------------------------------------------
 // TextOutputControl
 //------------------------------------------------------------------------
 
@@ -784,6 +820,10 @@ public:
   // Turn extra processing for HTML conversion on or off.
   void enableHTMLExtras(GBool html) { control.html = html; }
 
+protected:
+  TextPage *text;		// text for the current page
+  TextOutputControl control;	// formatting parameters
+
 private:
 
   void generateBOM();
@@ -792,8 +832,6 @@ private:
   void *outputStream;		// output stream
   GBool needClose;		// need to close the output file?
 				//   (only if outputStream is a FILE*)
-  TextPage *text;		// text for the current page
-  TextOutputControl control;	// formatting parameters
   GBool ok;			// set up ok?
 };
 
