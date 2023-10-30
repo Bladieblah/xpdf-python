@@ -41,8 +41,7 @@ PyObject *construct(PyObject *self, PyObject *args) {
     PdfLoader *loader = new PdfLoader(config, fileName, ownerPw, userPw);
 
     if (!loader->isOk()) {
-        int errCode = NULL;
-        errCode = loader->getErrorCode();
+        int errCode = loader->getErrorCode();
         char message[1000] = "";
         switch (errCode) {        
           default:

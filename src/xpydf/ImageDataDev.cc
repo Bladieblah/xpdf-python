@@ -107,7 +107,7 @@ void ImageDataDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
     int width, int height, GBool invert,
     GBool inlineImg, GBool interpolate
 ) {
-  int size, bytesRead, pixelsRead;
+  unsigned int size, bytesRead, pixelsRead;
   int rowCount = 0;
   char buf;
 
@@ -132,7 +132,7 @@ void ImageDataDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
       break;
     }
 
-    for (size_t i = 0; i < sizeof(char) * 8; i++) {
+    for (unsigned int i = 0; i < sizeof(char) * 8; i++) {
       image.data[pixelsRead++] = buf & (128 >> i) ? 0xff : 0;
       rowCount++;
 
