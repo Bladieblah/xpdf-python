@@ -528,33 +528,25 @@ public:
   void removeChars(double xMin, double yMin, double xMax, double yMax,
 		   double xOverlapThresh, double yOverlapThresh);
 
-protected:
+public:
   virtual TextChar *textCharType(Unicode cA, int charPosA, int charLenA,
     double xMinA, double yMinA, double xMaxA, double yMaxA,
     int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
     TextFontInfo *fontA, double fontSizeA,
     double colorRA, double colorGA, double colorBA
   ) {
+  fprintf(stderr, "Old textCharType\n");
     return new TextChar(cA, charPosA, charLenA, xMinA, yMinA, xMaxA, yMaxA,
       rotA, rotatedA, clippedA, invisibleA, fontA, fontSizeA,
       colorRA, colorGA, colorBA);
   }
 
+  virtual void encodeFragment(Unicode *text, int len, UnicodeMap *uMap,
+		      GBool primaryLR, GString *s);
+
   void addChar(GfxState *state, double x, double y,
 	       double dx, double dy,
 	       CharCode c, int nBytes, Unicode *u, int uLen);
-
-private:
-
-  void startPage(GfxState *state);
-  void clear();
-  void updateFont(GfxState *state);
-  void incCharCount(int nChars);
-  void beginActualText(GfxState *state, Unicode *u, int uLen);
-  void endActualText(GfxState *state);
-  void addUnderline(double x0, double y0, double x1, double y1);
-  void addLink(double xMin, double yMin, double xMax, double yMax,
-	       Link *link);
 
   // output
   void writeReadingOrder(void *outputStream,
@@ -587,8 +579,18 @@ private:
 		UnicodeMap *uMap,
 		char *space, int spaceLen,
 		char *eol, int eolLen);
-  void encodeFragment(Unicode *text, int len, UnicodeMap *uMap,
-		      GBool primaryLR, GString *s);
+
+private:
+
+  void startPage(GfxState *state);
+  void clear();
+  void updateFont(GfxState *state);
+  void incCharCount(int nChars);
+  void beginActualText(GfxState *state, Unicode *u, int uLen);
+  void endActualText(GfxState *state);
+  void addUnderline(double x0, double y0, double x1, double y1);
+  void addLink(double xMin, double yMin, double xMax, double yMax,
+	       Link *link);
   GBool unicodeEffectiveTypeLOrNum(Unicode u, Unicode left, Unicode right);
   GBool unicodeEffectiveTypeR(Unicode u, Unicode left, Unicode right);
 

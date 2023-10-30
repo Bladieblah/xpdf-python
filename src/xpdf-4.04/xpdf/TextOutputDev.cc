@@ -2249,6 +2249,8 @@ void TextPage::encodeFragment(Unicode *text, int len, UnicodeMap *uMap,
   int lreLen, rleLen, popdfLen, n;
   int i, j, k;
 
+  fprintf(stderr, "Old...\n");
+
   if (uMap->isUnicode()) {
 
     lreLen = uMap->mapUnicode(0x202a, lre, sizeof(lre));
