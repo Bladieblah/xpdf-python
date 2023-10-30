@@ -1452,9 +1452,6 @@ void TextPage::addChar(GfxState *state, double x, double y,
   // add the characters
   if (uBufLen > 0) {
 
-    Ref *ref = state->getFont()->getID();
-    fprintf(stderr, "Adding %d characters of font (%d, %d) at size %.1f\n", uBufLen, ref->gen, ref->num, state->getFontSize());
-
     // handle right-to-left ligatures: if there are multiple Unicode
     // characters, and they're all right-to-left, insert them in
     // right-to-left order
@@ -1530,13 +1527,13 @@ void TextPage::addChar(GfxState *state, double x, double y,
       } else {
 	j = i;
       }
-      chars->append(new TextChar(uBuf[j], charPos, nBytes,
-				 xMin, yMin, xMax, yMax,
-				 curRot, rotated, clipped,
-				 state->getRender() == 3 || alpha < 0.001,
-				 curFont, curFontSize,
-				 colToDbl(rgb.r), colToDbl(rgb.g),
-				 colToDbl(rgb.b)));
+      chars->append(textCharType(uBuf[j], charPos, nBytes,
+        xMin, yMin, xMax, yMax,
+        curRot, rotated, clipped,
+        state->getRender() == 3 || alpha < 0.001,
+        curFont, curFontSize,
+        colToDbl(rgb.r), colToDbl(rgb.g),
+        colToDbl(rgb.b)));
     }
   }
 
