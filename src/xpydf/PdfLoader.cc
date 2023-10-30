@@ -28,6 +28,8 @@
 #include "config.h"
 #include "SplashOutputDev.h"
 #include "SplashBitmap.h"
+#include "Annot.h"
+#include "AcroForm.h"
 
 #include "PdfLoader.h"
 #include "ImageDataDev.h"
@@ -178,6 +180,279 @@ std::vector<PageImageInfo> PdfLoader::extractPageInfo() {
   return pagesInfo;
 }
 
+static Ref *fonts;
+static int fontsLen;
+static int fontsSize;
+
+static char *seenObjs;
+static int numObjects;
+
+void PdfLoader::scanFonts(Object *obj) {
+  Object obj2;
+
+  if (checkFontObject(obj, &obj2) && obj2.isDict()) {
+    scanFonts(obj2.getDict());
+  }
+  obj2.free();
+}
+
+void PdfLoader::scanFonts(Dict *resDict) {
+  Object fontDict1, fontDict2, xObjDict1, xObjDict2, xObj1, xObj2;
+  Object patternDict1, patternDict2, pattern1, pattern2;
+  Object gsDict1, gsDict2, gs1, gs2, smask1, smask2, smaskGroup1, smaskGroup2;
+  Object resObj;
+  Ref r;
+  GfxFontDict *gfxFontDict;
+  GfxFont *font;
+  int i;
+
+  // scan the fonts in this resource dictionary
+  gfxFontDict = NULL;
+  resDict->lookupNF("Font", &fontDict1);
+  if (checkFontObject(&fontDict1, &fontDict2) && fontDict2.isDict()) {
+    fprintf(stderr, "checkFontObject success\n");
+    if (fontDict1.isRef()) {
+      fprintf(stderr, "isRef\n");
+      r = fontDict1.getRef();
+      gfxFontDict = new GfxFontDict(doc->getXRef(), &r, fontDict2.getDict());
+    } else {
+      fprintf(stderr, "noRef\n");
+      gfxFontDict = new GfxFontDict(doc->getXRef(), NULL, fontDict2.getDict());
+    }
+    if (gfxFontDict) {
+      fprintf(stderr, "gfxFontDict\n");
+      for (i = 0; i < gfxFontDict->getNumFonts(); ++i) {
+        if ((font = gfxFontDict->getFont(i))) {
+          fprintf(stderr, "Scanning font:\n");
+          scanFont(font);
+        }
+      }
+      delete gfxFontDict;
+    }
+  } else {
+    fprintf(stderr, "Sad :(\n");
+  }
+  fontDict2.free();
+  fontDict1.free();
+
+  // recursively scan any resource dictionaries in XObjects in this
+  // resource dictionary
+  resDict->lookupNF("XObject", &xObjDict1);
+  if (checkFontObject(&xObjDict1, &xObjDict2) && xObjDict2.isDict()) {
+    for (i = 0; i < xObjDict2.dictGetLength(); ++i) {
+      xObjDict2.dictGetValNF(i, &xObj1);
+      if (checkFontObject(&xObj1, &xObj2) && xObj2.isStream()) {
+        xObj2.streamGetDict()->lookupNF("Resources", &resObj);
+        scanFonts(&resObj);
+        resObj.free();
+      }
+      xObj2.free();
+      xObj1.free();
+    }
+  }
+  xObjDict2.free();
+  xObjDict1.free();
+
+  // recursively scan any resource dictionaries in Patterns in this
+  // resource dictionary
+  resDict->lookupNF("Pattern", &patternDict1);
+  if (checkFontObject(&patternDict1, &patternDict2) && patternDict2.isDict()) {
+    for (i = 0; i < patternDict2.dictGetLength(); ++i) {
+      patternDict2.dictGetValNF(i, &pattern1);
+      if (checkFontObject(&pattern1, &pattern2) && pattern2.isStream()) {
+        pattern2.streamGetDict()->lookupNF("Resources", &resObj);
+        scanFonts(&resObj);
+        resObj.free();
+      }
+      pattern2.free();
+      pattern1.free();
+    }
+  }
+  patternDict2.free();
+  patternDict1.free();
+
+  // recursively scan any resource dictionaries in ExtGStates in this
+  // resource dictionary
+  resDict->lookupNF("ExtGState", &gsDict1);
+  if (checkFontObject(&gsDict1, &gsDict2) && gsDict2.isDict()) {
+    for (i = 0; i < gsDict2.dictGetLength(); ++i) {
+      gsDict2.dictGetValNF(i, &gs1);
+      if (checkFontObject(&gs1, &gs2) && gs2.isDict()) {
+        gs2.dictLookupNF("SMask", &smask1);
+        if (checkFontObject(&smask1, &smask2) && smask2.isDict()) {
+          smask2.dictLookupNF("G", &smaskGroup1);
+          if (checkFontObject(&smaskGroup1, &smaskGroup2) &&
+              smaskGroup2.isStream()) {
+            smaskGroup2.streamGetDict()->lookupNF("Resources", &resObj);
+            scanFonts(&resObj);
+            resObj.free();
+          }
+          smaskGroup2.free();
+          smaskGroup1.free();
+        }
+        smask2.free();
+        smask1.free();
+      }
+      gs2.free();
+      gs1.free();
+    }
+  }
+  gsDict2.free();
+  gsDict1.free();
+}
+
+void PdfLoader::scanFont(GfxFont *font) {
+  Ref fontRef, embRef;
+  Object fontObj, toUnicodeObj;
+  GString *name;
+  GBool emb, subset, hasToUnicode;
+  GfxFontLoc *loc;
+  int i;
+
+  fontRef = *font->getID();
+
+  // check for an already-seen font
+  for (i = 0; i < fontsLen; ++i) {
+    if (fontRef.num == fonts[i].num && fontRef.gen == fonts[i].gen) {
+      return;
+    }
+  }
+
+  // font name
+  name = font->getName();
+
+  // check for an embedded font
+  if (font->getType() == fontType3) {
+    emb = gTrue;
+  } else {
+    emb = font->getEmbeddedFontID(&embRef);
+  }
+
+  // look for a ToUnicode map
+  hasToUnicode = gFalse;
+  if (doc->getXRef()->fetch(fontRef.num, fontRef.gen, &fontObj)->isDict()) {
+    hasToUnicode = fontObj.dictLookup("ToUnicode", &toUnicodeObj)->isStream();
+    toUnicodeObj.free();
+  }
+  fontObj.free();
+
+  // check for a font subset name: capital letters followed by a '+'
+  // sign
+  subset = gFalse;
+  if (name) {
+    for (i = 0; i < name->getLength(); ++i) {
+      if (name->getChar(i) < 'A' || name->getChar(i) > 'Z') {
+	break;
+      }
+    }
+    subset = i > 0 && i < name->getLength() && name->getChar(i) == '+';
+  }
+
+  // print the font info
+  printf("%-46s",
+    name ? name->getCString() : "[none]");
+  if (fontRef.gen >= 100000) {
+    printf(" [none]");
+  } else {
+    printf(" %6d %2d", fontRef.num, fontRef.gen);
+  }
+  printf("\n");
+
+  // add this font to the list
+  if (fontsLen == fontsSize) {
+    if (fontsSize <= INT_MAX - 32) {
+      fontsSize += 32;
+    } else {
+      // let greallocn throw an exception
+      fontsSize = -1;
+    }
+    fonts = (Ref *)greallocn(fonts, fontsSize, sizeof(Ref));
+  }
+  fonts[fontsLen++] = *font->getID();
+}
+
+GBool PdfLoader::checkFontObject(Object *in, Object *out) {
+  int objNum;
+
+  if (!in->isRef()) {
+    in->copy(out);
+    return gTrue;
+  }
+  objNum = in->getRefNum();
+  if (objNum < 0 || objNum >= numObjects) {
+    out->initNull();
+    return gTrue;
+  }
+  if (seenObjs[objNum]) {
+    out->initNull();
+    return gFalse;
+  }
+  seenObjs[objNum] = (char)1;
+  in->fetch(doc->getXRef(), out);
+  return gTrue;
+}
+
+std::vector<std::string> PdfLoader::extractFonts() {
+  int firstPage, lastPage;
+  std::vector<std::string> fontInfo;
+  char dummyFile[1] = "";
+
+  Dict *resDict;
+  Annots *annots;
+  AcroForm *form;
+  Object obj1, obj2;
+
+  if (!doc->isOk()) {
+    goto err;
+  }
+
+  firstPage = 1;
+  lastPage = doc->getNumPages();
+
+  for (int page = firstPage; page <= lastPage; page++) {
+    Page *pdfPage = doc->getCatalog()->getPage(page);
+
+    if ((resDict = pdfPage->getResourceDict())) {
+      fprintf(stderr, "scanFonts\n");
+      scanFonts(resDict);
+    }
+
+    annots = new Annots(doc, pdfPage->getAnnots(&obj1));
+    obj1.free();
+
+    for (int i = 0; i < annots->getNumAnnots(); i++) {
+      if (annots->getAnnot(i)->getAppearance(&obj1)->isStream()) {
+        obj1.streamGetDict()->lookupNF("Resources", &obj2);
+        scanFonts(&obj2);
+        obj2.free();
+      }
+      obj1.free();
+    }
+    delete annots;
+  }
+  if ((form = doc->getCatalog()->getForm())) {
+    for (int i = 0; i < form->getNumFields(); ++i) {
+      form->getField(i)->getResources(&obj1);
+      if (obj1.isArray()) {
+        for (int j = 0; j < obj1.arrayGetLength(); ++j) {
+          obj1.arrayGetNF(j, &obj2);
+          scanFonts(&obj2);
+          obj2.free();
+        }
+      } else if (obj1.isDict()) {
+        scanFonts(obj1.getDict());
+      }
+      obj1.free();
+    }
+  }
+
+err:
+  Object::memCheck(stderr);
+  gMemReport(stderr);
+
+  return fontInfo;
+}
+
 std::vector<Image> PdfLoader::extractImages(int pageNum) {
   ImageDataDev *imageOut;
   std::vector<Image> images;
@@ -254,4 +529,15 @@ bool PdfLoader::isOk() {
 
 int PdfLoader::getErrorCode() {
   return (int)doc->getErrorCode();
+}
+
+#include <iostream>
+
+using namespace std;
+
+int main() {
+  LoaderConfig config;
+  PdfLoader *l = new PdfLoader(config, "skf.pdf");
+  cout << "Extracting fonts:" << endl;
+  l->extractFonts();
 }

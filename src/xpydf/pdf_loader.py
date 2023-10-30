@@ -147,6 +147,20 @@ class PdfLoader:
 
         return images
 
+    def extract_fonts(self) -> List[str]:
+        """Return image related metadata from the pdf
+
+        Returns
+        -------
+        List[PageInfo]
+            A PageInfo object for each page
+        """
+        images: List[str] = []
+        if self.capsule is not None:
+            images = cXpdfPython.extractFonts(self.capsule)
+
+        return images
+
     def extract_images(self, page_number: int) -> List[npt.NDArray[Any]]:
         """Extract raw image data from a page, as a numpy array.
 
