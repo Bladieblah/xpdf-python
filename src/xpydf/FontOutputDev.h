@@ -1,32 +1,31 @@
 #ifndef FONT_OUTPUT_DEV_H
 #define FONT_OUTPUT_DEV_H
 
-#include "TextOutputDev.h"
+#include <map>
+#include <string>
 
-typedef TextChar* (*CharConstructor)(Unicode cA, int charPosA, int charLenA,
-  double xMinA, double yMinA, double xMaxA, double yMaxA,
-  int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
-  TextFontInfo *fontA, double fontSizeA,
-  double colorRA, double colorGA, double colorBA);
+#include "TextOutputDev.h"
 
 class TextPageFont: public TextPage {
 public:
-  TextPageFont(TextOutputControl *controlA) : TextPage(controlA) {};
-  
-  void TextPageFont::addChar(GfxState *state, double x, double y,
-    double dx, double dy,
-    CharCode c, int nBytes, Unicode *u, int uLen);
+  TextPageFont(TextOutputControl *controlA) : TextPage(controlA) { };
 
-  TextChar *TextCharType(Unicode cA, int charPosA, int charLenA,
+protected:
+  TextChar *textCharType(Unicode cA, int charPosA, int charLenA,
     double xMinA, double yMinA, double xMaxA, double yMaxA,
     int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
     TextFontInfo *fontA, double fontSizeA,
-    double colorRA, double colorGA, double colorBA) {
-    return new TextChar(cA, charPosA, charLenA, xMinA, yMinA, xMaxA, yMaxA,
-      rotA, rotatedA, clippedA, invisibleA, fontA, fontSizeA,
-      colorRA, colorGA, colorBA);
-  }
+    double colorRA, double colorGA, double colorBA);
+private:
+  std::map<std::string, unsigned int> fontNameIds;
+  std::map<std::string, unsigned int> fontTypeIds;
+  std::map<FontSpec, unsigned int> fontIds;
 };
+
+typedef struct FontSpec {
+  unsigned int fontNameId, fontTypeId;
+  int fontSize;
+} FontSpec;
 
 class FontOutputDev: public TextOutputDev {
 public:
