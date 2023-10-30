@@ -6,9 +6,13 @@
 
 #include "TextOutputDev.h"
 
+typedef struct FontSpec {
+  unsigned int fontNameId, fontTypeId, fontSize;
+} FontSpec;
+
 class TextPageFont: public TextPage {
 public:
-  TextPageFont(TextOutputControl *controlA) : TextPage(controlA) { };
+  TextPageFont(TextOutputControl *controlA) : TextPage(controlA) {};
 
 protected:
   TextChar *textCharType(Unicode cA, int charPosA, int charLenA,
@@ -21,11 +25,6 @@ private:
   std::map<std::string, unsigned int> fontTypeIds;
   std::map<FontSpec, unsigned int> fontIds;
 };
-
-typedef struct FontSpec {
-  unsigned int fontNameId, fontTypeId;
-  int fontSize;
-} FontSpec;
 
 class FontOutputDev: public TextOutputDev {
 public:

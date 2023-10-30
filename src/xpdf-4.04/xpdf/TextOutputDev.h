@@ -422,7 +422,7 @@ class TextPage {
 public:
 
   TextPage(TextOutputControl *controlA);
-  ~TextPage();
+  virtual ~TextPage();
 
   // Write contents of page to a stream.
   void write(void *outputStream, TextOutputFunc outputFunc);
@@ -529,25 +529,26 @@ public:
 		   double xOverlapThresh, double yOverlapThresh);
 
 protected:
-  TextChar *textCharType(Unicode cA, int charPosA, int charLenA,
+  virtual TextChar *textCharType(Unicode cA, int charPosA, int charLenA,
     double xMinA, double yMinA, double xMaxA, double yMaxA,
     int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
     TextFontInfo *fontA, double fontSizeA,
-    double colorRA, double colorGA, double colorBA)
-  {
+    double colorRA, double colorGA, double colorBA
+  ) {
     return new TextChar(cA, charPosA, charLenA, xMinA, yMinA, xMaxA, yMaxA,
       rotA, rotatedA, clippedA, invisibleA, fontA, fontSizeA,
       colorRA, colorGA, colorBA);
   }
+
+  void addChar(GfxState *state, double x, double y,
+	       double dx, double dy,
+	       CharCode c, int nBytes, Unicode *u, int uLen);
 
 private:
 
   void startPage(GfxState *state);
   void clear();
   void updateFont(GfxState *state);
-  void addChar(GfxState *state, double x, double y,
-	       double dx, double dy,
-	       CharCode c, int nBytes, Unicode *u, int uLen);
   void incCharCount(int nChars);
   void beginActualText(GfxState *state, Unicode *u, int uLen);
   void endActualText(GfxState *state);

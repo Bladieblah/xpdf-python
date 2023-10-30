@@ -9,6 +9,15 @@
 #include "FontOutputDev.h"
 
 
+bool operator<(const FontSpec& l, const FontSpec& r) {
+  return (
+    l.fontNameId < r.fontNameId
+    || (l.fontNameId == r.fontNameId && l.fontTypeId < r.fontTypeId)
+    || (l.fontNameId == r.fontNameId && l.fontTypeId == r.fontTypeId && l.fontSize < r.fontSize)
+  );
+}
+
+
 TextChar *TextPageFont::textCharType(Unicode cA, int charPosA, int charLenA,
   double xMinA, double yMinA, double xMaxA, double yMaxA,
   int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
@@ -30,7 +39,7 @@ TextChar *TextPageFont::textCharType(Unicode cA, int charPosA, int charLenA,
         fontTypeIds[fontType] = fontTypeIds.size();
       }
 
-      FontSpec spec = {fontNameIds[fontName], fontTypeIds[fontType], fontSizeA};
+      FontSpec spec = {fontNameIds[fontName], fontTypeIds[fontType], (unsigned int)fontSizeA};
 
       if (fontIds.find(spec) == fontIds.end()) {
         fontIds[spec] = fontIds.size() + 1;
