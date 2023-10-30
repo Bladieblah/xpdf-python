@@ -36,6 +36,7 @@ public:
     PdfLoader(LoaderConfig config, char *fileName, char *ownerPw = NULL, char *userPw = NULL);
     ~PdfLoader();
     std::vector<std::string> extractText();
+    std::vector<std::string> extractFontMap();
     std::vector<PageImageInfo> extractPageInfo();
     std::vector<std::string> extractFonts();
     std::vector<Image> extractImages(int pageNum);

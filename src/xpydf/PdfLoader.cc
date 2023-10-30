@@ -1,4 +1,6 @@
 #include <aconf.h>
+#include <map>
+#include <set>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -32,6 +34,7 @@
 #include "AcroForm.h"
 
 #include "PdfLoader.h"
+#include "FontOutputDev.h"
 #include "ImageDataDev.h"
 #include "ImageInfoDev.h"
 
@@ -136,6 +139,39 @@ err:
   return pages;
 }
 
+std::vector<std::string> PdfLoader::extractFontMap() {
+  FontOutputDev *fontOut;
+  std::stringstream *stream = new std::stringstream();
+  std::vector<std::string> pages;
+  int firstPage, lastPage;
+
+  if (!doc->isOk()) {
+    goto err;
+  }
+
+  firstPage = 1;
+  lastPage = doc->getNumPages();
+  
+  fontOut = new FontOutputDev(&outputToStringStream, stream, &textOutControl);
+
+  if (fontOut->isOk()) {
+    for (int page = firstPage; page <= lastPage; page++) {
+      stream->str("");
+      doc->displayPages(fontOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
+      pages.push_back(stream->str());
+    }
+  } 
+
+  delete fontOut;
+err:
+  delete stream;
+
+  Object::memCheck(stderr);
+  gMemReport(stderr);
+
+  return pages;
+}
+
 std::vector<PageImageInfo> PdfLoader::extractPageInfo() {
   ImageInfoDev *imageOut;
   int firstPage, lastPage;
@@ -172,7 +208,7 @@ std::vector<PageImageInfo> PdfLoader::extractPageInfo() {
   }
 
   delete imageOut;
- err:
+err:
 
   Object::memCheck(stderr);
   gMemReport(stderr);
@@ -210,28 +246,22 @@ void PdfLoader::scanFonts(Dict *resDict) {
   gfxFontDict = NULL;
   resDict->lookupNF("Font", &fontDict1);
   if (checkFontObject(&fontDict1, &fontDict2) && fontDict2.isDict()) {
-    fprintf(stderr, "checkFontObject success\n");
     if (fontDict1.isRef()) {
-      fprintf(stderr, "isRef\n");
       r = fontDict1.getRef();
       gfxFontDict = new GfxFontDict(doc->getXRef(), &r, fontDict2.getDict());
     } else {
-      fprintf(stderr, "noRef\n");
       gfxFontDict = new GfxFontDict(doc->getXRef(), NULL, fontDict2.getDict());
     }
     if (gfxFontDict) {
-      fprintf(stderr, "gfxFontDict\n");
       for (i = 0; i < gfxFontDict->getNumFonts(); ++i) {
         if ((font = gfxFontDict->getFont(i))) {
-          fprintf(stderr, "Scanning font:\n");
           scanFont(font);
         }
       }
       delete gfxFontDict;
     }
-  } else {
-    fprintf(stderr, "Sad :(\n");
   }
+
   fontDict2.free();
   fontDict1.free();
 
@@ -301,12 +331,12 @@ void PdfLoader::scanFonts(Dict *resDict) {
   gsDict1.free();
 }
 
+std::map<std::string, std::set<std::string>> fontDict;
+
 void PdfLoader::scanFont(GfxFont *font) {
-  Ref fontRef, embRef;
+  Ref fontRef;
   Object fontObj, toUnicodeObj;
   GString *name;
-  GBool emb, subset, hasToUnicode;
-  GfxFontLoc *loc;
   int i;
 
   fontRef = *font->getID();
@@ -321,42 +351,18 @@ void PdfLoader::scanFont(GfxFont *font) {
   // font name
   name = font->getName();
 
-  // check for an embedded font
-  if (font->getType() == fontType3) {
-    emb = gTrue;
-  } else {
-    emb = font->getEmbeddedFontID(&embRef);
-  }
-
-  // look for a ToUnicode map
-  hasToUnicode = gFalse;
-  if (doc->getXRef()->fetch(fontRef.num, fontRef.gen, &fontObj)->isDict()) {
-    hasToUnicode = fontObj.dictLookup("ToUnicode", &toUnicodeObj)->isStream();
-    toUnicodeObj.free();
-  }
-  fontObj.free();
-
-  // check for a font subset name: capital letters followed by a '+'
-  // sign
-  subset = gFalse;
-  if (name) {
-    for (i = 0; i < name->getLength(); ++i) {
-      if (name->getChar(i) < 'A' || name->getChar(i) > 'Z') {
-	break;
-      }
-    }
-    subset = i > 0 && i < name->getLength() && name->getChar(i) == '+';
-  }
-
   // print the font info
-  printf("%-46s",
-    name ? name->getCString() : "[none]");
-  if (fontRef.gen >= 100000) {
-    printf(" [none]");
-  } else {
-    printf(" %6d %2d", fontRef.num, fontRef.gen);
+  if (name) {
+    char fontCode[1000], fontName[1000], fontType[1000];
+
+    if (sscanf(name->getCString(), "%[^+]+%[^-]-%s", fontCode, fontName, fontType) != EOF) {
+      if (fontDict.find(fontName) == fontDict.end()) {
+        fontDict[fontName] = std::set<std::string>();
+      }
+
+      fontDict[fontName].insert(fontType);
+    }
   }
-  printf("\n");
 
   // add this font to the list
   if (fontsLen == fontsSize) {
@@ -395,7 +401,6 @@ GBool PdfLoader::checkFontObject(Object *in, Object *out) {
 std::vector<std::string> PdfLoader::extractFonts() {
   int firstPage, lastPage;
   std::vector<std::string> fontInfo;
-  char dummyFile[1] = "";
 
   Dict *resDict;
   Annots *annots;
@@ -409,11 +414,17 @@ std::vector<std::string> PdfLoader::extractFonts() {
   firstPage = 1;
   lastPage = doc->getNumPages();
 
+  fonts = NULL;
+  fontsLen = fontsSize = 0;
+  numObjects = doc->getXRef()->getNumObjects();
+  seenObjs = (char *)gmalloc(numObjects);
+  memset(seenObjs, 0, numObjects);
+
   for (int page = firstPage; page <= lastPage; page++) {
     Page *pdfPage = doc->getCatalog()->getPage(page);
 
     if ((resDict = pdfPage->getResourceDict())) {
-      fprintf(stderr, "scanFonts\n");
+      // fprintf(stderr, "scanFonts\n");
       scanFonts(resDict);
     }
 
@@ -445,6 +456,18 @@ std::vector<std::string> PdfLoader::extractFonts() {
       obj1.free();
     }
   }
+
+  for (auto pair : fontDict) {
+    fprintf(stderr, "%s has types:\n", pair.first.c_str());
+    for (auto ft : pair.second) {
+      fprintf(stderr, " - %s\n", ft.c_str());
+    }
+  }
+
+  fprintf(stderr, "Found %d fonts\n", fontsSize);
+
+  gfree(fonts);
+  gfree(seenObjs);
 
 err:
   Object::memCheck(stderr);
@@ -512,7 +535,7 @@ Image PdfLoader::pageToImage(int pageNum, int dpi) {
   memcpy(pageImage.data, bitmap->getDataPtr(), pageImage.size);
 
   delete splashOut;
- err:
+err:
 
   Object::memCheck(stderr);
   gMemReport(stderr);
