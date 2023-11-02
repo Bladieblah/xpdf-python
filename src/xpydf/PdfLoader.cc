@@ -588,34 +588,34 @@ int PdfLoader::getErrorCode() {
   return (int)doc->getErrorCode();
 }
 
-// #include <iostream>
+#include <iostream>
 
-// using namespace std;
+using namespace std;
 
-// int main() {
-//   LoaderConfig config;
-//   map<unsigned int, NamedFontSpec> fontSpecs;
+int main() {
+  LoaderConfig config;
+  map<unsigned int, NamedFontSpec> fontSpecs;
 
-//   PdfLoader *l = new PdfLoader(config, "skf.pdf");
-//   vector<string> pageText = l->extractText();
-//   vector<string> fontMap = l->extractFontMap(fontSpecs);
+  PdfLoader *l = new PdfLoader(config, "skf.pdf");
+  vector<string> pageText = l->extractText();
+  vector<string> fontMap = l->extractFontMap(fontSpecs);
 
-//   // fprintf(stderr, "Read %lu pages text, %lu pages fontmap\n", pageText.size(), fontMap.size());
+  // fprintf(stderr, "Read %lu pages text, %lu pages fontmap\n", pageText.size(), fontMap.size());
 
-//   int diff = 0;
+  int diff = 0;
 
-//   for (int i = 0; i < pageText.size(); i++) {
-//     diff += fabs((int)pageText[i].length() - (int)fontMap[i].length());
-//     if (pageText[i].length() != fontMap[i].length()) {
-//       fprintf(stderr, "Page %d mismatch: %lu text, %lu font\n", i, pageText[i].length(), fontMap[i].length());
-//     }
-//   }
+  for (int i = 0; i < pageText.size(); i++) {
+    diff += fabs((int)pageText[i].length() - (int)fontMap[i].length());
+    if (pageText[i].length() != fontMap[i].length()) {
+      fprintf(stderr, "Page %d mismatch: %lu text, %lu font\n", i, pageText[i].length(), fontMap[i].length());
+    }
+  }
 
-//   fprintf(stderr, "Total diff %d\n", diff);
+  fprintf(stderr, "Total diff %d\n", diff);
 
-//   // cerr << pageText[0] << endl;
+  // cerr << pageText[0] << endl;
 
-//   // for (auto pair : fontSpecs) {
-//   //   fprintf(stderr, "Font id %d had name '%s', type '%s', size %d\n", pair.first, pair.second.fontName.c_str(), pair.second.fontType.c_str(), pair.second.fontSize);
-//   // }
-// }
+  // for (auto pair : fontSpecs) {
+  //   fprintf(stderr, "Font id %d had name '%s', type '%s', size %d\n", pair.first, pair.second.fontName.c_str(), pair.second.fontType.c_str(), pair.second.fontSize);
+  // }
+}

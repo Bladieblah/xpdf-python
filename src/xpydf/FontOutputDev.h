@@ -26,59 +26,7 @@ bool operator!=(const FontSpec& l, const FontSpec& r);
 
 class TextPageFont: public TextPage {
 public:
-  TextPageFont(TextOutputControl *controlA) : TextPage(controlA) {
-    if (!(uMap = globalParams->getTextEncoding())) {
-      fprintf(stderr, "WARNING: Encoding not found");
-      return;
-    }
-
-    spaceLen = uMap->mapUnicode(0x20, space, sizeof(space));
-    eolLen = 0; // make gcc happy
-
-    switch (globalParams->getTextEOL()) {
-    case eolUnix:
-      eolLen = uMap->mapUnicode(0x0a, eol, sizeof(eol));
-      break;
-    case eolDOS:
-      eolLen = uMap->mapUnicode(0x0d, eol, sizeof(eol));
-      eolLen += uMap->mapUnicode(0x0a, eol + eolLen, (int)sizeof(eol) - eolLen);
-      break;
-    case eolMac:
-      eolLen = uMap->mapUnicode(0x0d, eol, sizeof(eol));
-      break;
-    }
-
-    if (eolLen != 1 || spaceLen != 1) {
-      fprintf(stderr, "WARNING: Unexpected delimiter lengths: [spacelen] = %d, [eollen] = %d\n", spaceLen, eolLen);
-    }
-
-    fontNameIds["__space__"] = -1U;
-    fontTypeIds["__space__"] = -1U;
-    FontSpec dummy = {-1U, -1U, 0};
-    fontSpecIds[dummy] = space[0];
-
-    fontNameIds["__eol__"] = -2U;
-    fontTypeIds["__eol__"] = -2U;
-    dummy = (FontSpec){-2U, -2U, 0};
-    fontSpecIds[dummy] = eol[0];
-
-    fontNameIds["__invalid__"] = -3U;
-    fontTypeIds["__invalid__"] = -3U;
-    dummy = (FontSpec){-3U, -3U, 0};
-    fontSpecIds[dummy] = FONT_INVALID;
-
-    fontNameIds["__unknown__"] = -4U;
-    fontTypeIds["__unknown__"] = -4U;
-    dummy = (FontSpec){-4U, -4U, 0};
-    fontSpecIds[dummy] = FONT_UNKNOWN;
-
-
-    for(int i = 0; i <= 253; i++) {
-      if (i != space[0] && i != eol[0] && i != FONT_UNKNOWN) {
-        availableIds.push(i);
-      }
-    };
-  };
+  TextPageFont(TextOutputControl *controlA);
 
   std::map<unsigned int, NamedFontSpec> getFontSpecs() {
     std::map<unsigned int, NamedFontSpec> result;
@@ -105,7 +53,7 @@ public:
     return result;
   }
 
-// protected:
+protected:
   TextChar *textCharType(Unicode cA, int charPosA, int charLenA,
     double xMinA, double yMinA, double xMaxA, double yMaxA,
     int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
