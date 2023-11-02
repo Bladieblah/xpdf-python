@@ -64,3 +64,25 @@ PyObject *vectorImagesToList(const std::vector<ImageInfo> &data) {
 
     return listObj;
 }
+
+PyObject *mapFontSpecsToDict(const std::map<unsigned int, NamedFontSpec> &data) {
+    PyObject *dict = PyDict_New();
+    if (!dict) throw logic_error("Unable to allocate memory for Python dict");
+
+    for (auto pair : data) {
+        PyObject *item = PyDict_New();
+        if (!item) throw logic_error("Unable to allocate memory for Python dict");
+
+        PyObject *id = PyLong_FromLong(pair.first);
+        PyObject *name = PyUnicode_FromString(pair.second.fontName.c_str());
+        PyObject *type = PyUnicode_FromString(pair.second.fontType.c_str());
+
+        PyDict_SetItemString(item, "name", name);
+        PyDict_SetItemString(item, "type", type);
+        PyDict_SetItemString(item, "size", PyLong_FromLong(pair.second.fontSize));
+
+        PyDict_SetItem(dict, id, item);
+    }
+
+    return dict;
+}

@@ -1283,15 +1283,17 @@ Gfx8BitFont::Gfx8BitFont(XRef *xref, const char *tagA, Ref idA, GString *nameA,
       }
     }
   }
-
-  // construct the char code -> Unicode mapping object
+  
+    // construct the char code -> Unicode mapping object
   ctu = CharCodeToUnicode::make8BitToUnicode(toUnicode);
 
   // merge in a ToUnicode CMap, if there is one -- this overwrites
   // existing entries in ctu, i.e., the ToUnicode CMap takes
   // precedence, but the other encoding info is allowed to fill in any
   // holes
-  readToUnicodeCMap(fontDict, 8, ctu);
+  if (globalParams->getReadUnicodeCMap()) {
+    readToUnicodeCMap(fontDict, 8, ctu);
+  }
 
   // look for a Unicode-to-Unicode mapping
   if (name && (utu = globalParams->getUnicodeToUnicode(name))) {
@@ -1423,7 +1425,7 @@ int Gfx8BitFont::getNextChar(char *s, int len, CharCode *code,
 
   *code = c = (CharCode)(*s & 0xff);
   *uLen = ctu->mapToUnicode(c, u, uSize);
-  *dx = widths[c];
+    *dx = widths[c];
   *dy = *ox = *oy = 0;
   return 1;
 }

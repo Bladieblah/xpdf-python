@@ -338,6 +338,7 @@ public:
   GString *getDefaultPrinter();
   GBool getMapNumericCharNames();
   GBool getMapUnknownCharNames();
+  GBool getReadUnicodeCMap();
   GBool getMapExtTrueTypeFontsViaUnicode();
   GBool getUseTrueTypeUnicodeMapping();
   GBool isDroppedFont(const char *fontName);
@@ -400,6 +401,7 @@ public:
   void setOverprintPreview(GBool preview);
   void setMapNumericCharNames(GBool map);
   void setMapUnknownCharNames(GBool map);
+  void setReadUnicodeCMap(GBool map);
   void setMapExtTrueTypeFontsViaUnicode(GBool map);
   void setTabStateFile(char *tabStateFileA);
   void setPrintCommands(GBool printCommandsA);
@@ -589,6 +591,7 @@ private:
 				//   from the viewer)
   GBool mapNumericCharNames;	// map numeric char names (from font subsets)?
   GBool mapUnknownCharNames;	// map unknown char names?
+  GBool readUnicodeCMap;	// Read the unicode c map?
   GBool mapExtTrueTypeFontsViaUnicode;  // map char codes to GID via Unicode
 				        //   for external TrueType fonts?
   GBool useTrueTypeUnicodeMapping;	// use the Unicode cmaps in TrueType

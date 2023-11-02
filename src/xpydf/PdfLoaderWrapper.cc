@@ -23,15 +23,16 @@ PyObject *construct(PyObject *self, PyObject *args) {
     char *ownerPw = NULL;
     char *userPw = NULL;
 
-    PyArg_ParseTuple(args, "Opppppppbzz", &pobj0,
+    PyArg_ParseTuple(args, "OppppppppIzz", &pobj0,
         &(config.clipText),
         &(config.discardDiag),
         &(config.discardRotatedText),
         &(config.verbose),
         &(config.quiet),
-        &(config.mode),
         &(config.mapNumericCharNames),
         &(config.mapUnknownCharNames),
+        &(config.readUnicodeCMap),
+        &(config.mode),
         &ownerPw,
         &userPw
     );
@@ -110,6 +111,22 @@ PyObject *extractText(PyObject *self, PyObject *args) {
     
     PyObject *converted = vectorStringToList(result);
     return Py_BuildValue("O", converted);
+}
+
+PyObject *extractFontMap(PyObject *self, PyObject *args) {
+    vector<string> res;
+    
+    PyObject *loaderCapsule;
+    PyArg_ParseTuple(args, "O", &loaderCapsule);
+
+    PdfLoader *loader = (PdfLoader *)PyCapsule_GetPointer(loaderCapsule, "loaderPtr");
+    map<unsigned int, NamedFontSpec> fontSpecs;
+    vector<string> result = loader->extractFontMap(fontSpecs);
+    
+    PyObject *fontMap = vectorStringToList(result);
+    PyObject *fontDict = mapFontSpecsToDict(fontSpecs);
+
+    return Py_BuildValue("OO", fontMap, fontDict);
 }
 
 PyObject *extractPageInfo(PyObject *self, PyObject *args) {
@@ -222,6 +239,10 @@ PyMethodDef cXpdfPythonFunctions[] = {
     {"extractText",
       extractText, METH_VARARGS,
      "Extract text as bytes"},
+    
+    {"extractFontMap",
+      extractFontMap, METH_VARARGS,
+     "Extract font map as bytes"},
     
     {"extractPageInfo",
       extractPageInfo, METH_VARARGS,

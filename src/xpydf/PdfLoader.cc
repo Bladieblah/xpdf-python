@@ -8,6 +8,8 @@
 #include <sstream>
 #include <vector>
 
+#include <math.h>
+
 #include "gmem.h"
 #include "gmempp.h"
 #include "parseargs.h"
@@ -38,8 +40,31 @@
 #include "ImageDataDev.h"
 #include "ImageInfoDev.h"
 
+#define PAGES 1062
+#define PAGEE 1062
+
 
 static void outputToStringStream(void *stream, const char *text, int len) {
+  // fprintf(stderr, "Adding %d characters\n", len);
+  // if (len > 1)
+  //   fprintf(stderr, "(%.3d) %s\n", len, text);
+  ((std::stringstream *)stream)->write(text, len);
+}
+
+static void outputToStringStream2(void *stream, const char *text, int len) {
+  // fprintf(stderr, "Adding %d characters\n", len);
+  // if (len > 1) {
+  //   fprintf(stderr, "(%.3d) ", len);
+  //   for (int i = 0; i < len; i++) {
+  //     if (text[i] == ' ') {
+  //       fprintf(stderr, " ");
+  //     } else {
+  //       fprintf(stderr, "x");
+  //     }
+  //   }
+
+  //   fprintf(stderr, "\n");
+  // }
   ((std::stringstream *)stream)->write(text, len);
 }
 
@@ -53,6 +78,7 @@ PdfLoader::PdfLoader(LoaderConfig config, char *fileName, char *ownerPw, char *u
   globalParams->setErrQuiet(config.quiet);
   globalParams->setMapNumericCharNames(config.mapNumericCharNames);
   globalParams->setMapUnknownCharNames(config.mapUnknownCharNames);
+  globalParams->setReadUnicodeCMap(config.readUnicodeCMap);
   globalParams->setupBaseFonts(NULL);
 
   switch (config.mode) {
@@ -116,6 +142,8 @@ std::vector<std::string> PdfLoader::extractText() {
     goto err;
   }
 
+  firstPage = PAGES;
+  lastPage = PAGEE;
   firstPage = 1;
   lastPage = doc->getNumPages();
   
@@ -123,6 +151,7 @@ std::vector<std::string> PdfLoader::extractText() {
 
   if (textOut->isOk()) {
     for (int page = firstPage; page <= lastPage; page++) {
+      // fprintf(stderr, "Processing page %d\n", page);
       stream->str("");
       doc->displayPages(textOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
       pages.push_back(stream->str());
@@ -139,7 +168,7 @@ err:
   return pages;
 }
 
-std::vector<std::string> PdfLoader::extractFontMap() {
+std::vector<std::string> PdfLoader::extractFontMap(std::map<unsigned int, NamedFontSpec> &fontSpecs) {
   FontOutputDev *fontOut;
   std::stringstream *stream = new std::stringstream();
   std::vector<std::string> pages;
@@ -149,18 +178,23 @@ std::vector<std::string> PdfLoader::extractFontMap() {
     goto err;
   }
 
+  firstPage = PAGES;
+  lastPage = PAGEE;
   firstPage = 1;
   lastPage = doc->getNumPages();
   
-  fontOut = new FontOutputDev(&outputToStringStream, stream, &textOutControl);
+  fontOut = new FontOutputDev(&outputToStringStream2, stream, &textOutControl);
 
   if (fontOut->isOk()) {
     for (int page = firstPage; page <= lastPage; page++) {
+      // fprintf(stderr, "Processing page %d\n", page);
       stream->str("");
       doc->displayPages(fontOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
       pages.push_back(stream->str());
     }
-  } 
+  }
+
+  fontSpecs = fontOut->getFontSpecs();
 
   delete fontOut;
 err:
@@ -554,13 +588,34 @@ int PdfLoader::getErrorCode() {
   return (int)doc->getErrorCode();
 }
 
-#include <iostream>
+// #include <iostream>
 
-using namespace std;
+// using namespace std;
 
-int main() {
-  LoaderConfig config;
-  PdfLoader *l = new PdfLoader(config, "skf.pdf");
-  cout << "Extracting fonts:" << endl;
-  l->extractFonts();
-}
+// int main() {
+//   LoaderConfig config;
+//   map<unsigned int, NamedFontSpec> fontSpecs;
+
+//   PdfLoader *l = new PdfLoader(config, "skf.pdf");
+//   vector<string> pageText = l->extractText();
+//   vector<string> fontMap = l->extractFontMap(fontSpecs);
+
+//   // fprintf(stderr, "Read %lu pages text, %lu pages fontmap\n", pageText.size(), fontMap.size());
+
+//   int diff = 0;
+
+//   for (int i = 0; i < pageText.size(); i++) {
+//     diff += fabs((int)pageText[i].length() - (int)fontMap[i].length());
+//     if (pageText[i].length() != fontMap[i].length()) {
+//       fprintf(stderr, "Page %d mismatch: %lu text, %lu font\n", i, pageText[i].length(), fontMap[i].length());
+//     }
+//   }
+
+//   fprintf(stderr, "Total diff %d\n", diff);
+
+//   // cerr << pageText[0] << endl;
+
+//   // for (auto pair : fontSpecs) {
+//   //   fprintf(stderr, "Font id %d had name '%s', type '%s', size %d\n", pair.first, pair.second.fontName.c_str(), pair.second.fontType.c_str(), pair.second.fontSize);
+//   // }
+// }

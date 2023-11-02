@@ -1,8 +1,12 @@
-from typing import Any, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, Tuple, TypedDict
 
 import cXpdfPython
 import numpy.typing as npt
 
+class Font(TypedDict):
+    name: str
+    type: str
+    size: str
 
 class ImageInfo(TypedDict):
     """Container for image metadata
@@ -60,9 +64,10 @@ class PdfLoader:
         discard_rotated_text: bool = True,
         verbose: bool = False,
         quiet: bool = True,
-        mode: str = "table",
         map_numeric_char_names: bool = False,
         map_unknown_char_names: bool = True,
+        read_unicode_cmap: bool = True,
+        mode: str = "table",
         owner_password: Optional[str] = None,
         user_password: Optional[str] = None,
     ):
@@ -105,7 +110,18 @@ class PdfLoader:
 
         self.filename = filename
         self.capsule = cXpdfPython.construct(
-            filename, cliptext, discard_diag, discard_rotated_text, verbose, quiet, xpdf_mode, map_numeric_char_names, map_unknown_char_names, owner_password, user_password
+            filename,
+            cliptext,
+            discard_diag,
+            discard_rotated_text,
+            verbose,
+            quiet,
+            map_numeric_char_names,
+            map_unknown_char_names,
+            read_unicode_cmap,
+            xpdf_mode,
+            owner_password,
+            user_password
         )
 
     def extract_bytes(self) -> List[bytes]:
@@ -121,6 +137,12 @@ class PdfLoader:
             pages = cXpdfPython.extractText(self.capsule)
 
         return pages
+    
+    def extract_font_map(self) -> Tuple[List[bytes], Dict[int, Font]]:
+        if self.capsule is not None:
+            pages, fonts = cXpdfPython.extractFontMap(self.capsule)
+
+        return pages, fonts
 
     def extract_strings(self) -> List[str]:
         """Extract and decode text from the pdf

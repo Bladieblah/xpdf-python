@@ -271,7 +271,7 @@ public:
   double getEdge(int idx) { return edge[idx]; }
   GBool getHyphenated() { return hyphenated; }
 
-private:
+public:
 
   static int cmpX(const void *p1, const void *p2);
 
@@ -535,14 +535,14 @@ public:
     TextFontInfo *fontA, double fontSizeA,
     double colorRA, double colorGA, double colorBA
   ) {
-  fprintf(stderr, "Old textCharType\n");
     return new TextChar(cA, charPosA, charLenA, xMinA, yMinA, xMaxA, yMaxA,
       rotA, rotatedA, clippedA, invisibleA, fontA, fontSizeA,
       colorRA, colorGA, colorBA);
   }
-
   virtual void encodeFragment(Unicode *text, int len, UnicodeMap *uMap,
 		      GBool primaryLR, GString *s);
+
+  virtual void computeLinePhysWidth(TextLine *line, UnicodeMap *uMap);
 
   void addChar(GfxState *state, double x, double y,
 	       double dx, double dy,
@@ -644,7 +644,6 @@ private:
   int getCharDirection(TextChar *ch, TextChar *left, TextChar *right);
   int assignPhysLayoutPositions(GList *columns);
   void assignLinePhysPositions(GList *columns);
-  void computeLinePhysWidth(TextLine *line, UnicodeMap *uMap);
   int assignColumnPhysPositions(GList *columns);
   void buildSuperLines(TextBlock *blk, GList *superLines);
   void assignSimpleLayoutPositions(GList *superLines, UnicodeMap *uMap);
