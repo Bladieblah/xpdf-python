@@ -138,6 +138,42 @@ private:
 };
 
 //------------------------------------------------------------------------
+// TextChar
+//------------------------------------------------------------------------
+
+class TextChar {
+public:
+
+  TextChar(Unicode cA, int charPosA, int charLenA,
+    double xMinA, double yMinA, double xMaxA, double yMaxA,
+    int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
+    TextFontInfo *fontA, double fontSizeA,
+    double colorRA, double colorGA, double colorBA);
+
+  static int cmpX(const void *p1, const void *p2);
+  static int cmpY(const void *p1, const void *p2);
+  static int cmpCharPos(const void *p1, const void *p2);
+
+  Unicode c;
+  int charPos;
+  int charLen;
+  double xMin, yMin, xMax, yMax;
+  TextFontInfo *font;
+  double fontSize;
+  double colorR,
+         colorG,
+         colorB;
+
+  // group the byte-size fields to minimize object size
+  Guchar rot;
+  char rotated;
+  char clipped;
+  char invisible;
+  char spaceAfter;
+  char overlap;
+};
+
+//------------------------------------------------------------------------
 // TextWord
 //------------------------------------------------------------------------
 
@@ -235,7 +271,7 @@ public:
   double getEdge(int idx) { return edge[idx]; }
   GBool getHyphenated() { return hyphenated; }
 
-private:
+public:
 
   static int cmpX(const void *p1, const void *p2);
 
@@ -386,7 +422,7 @@ class TextPage {
 public:
 
   TextPage(TextOutputControl *controlA);
-  ~TextPage();
+  virtual ~TextPage();
 
   // Write contents of page to a stream.
   void write(void *outputStream, TextOutputFunc outputFunc);
@@ -492,20 +528,25 @@ public:
   void removeChars(double xMin, double yMin, double xMax, double yMax,
 		   double xOverlapThresh, double yOverlapThresh);
 
-private:
+public:
+  virtual TextChar *textCharType(Unicode cA, int charPosA, int charLenA,
+    double xMinA, double yMinA, double xMaxA, double yMaxA,
+    int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
+    TextFontInfo *fontA, double fontSizeA,
+    double colorRA, double colorGA, double colorBA
+  ) {
+    return new TextChar(cA, charPosA, charLenA, xMinA, yMinA, xMaxA, yMaxA,
+      rotA, rotatedA, clippedA, invisibleA, fontA, fontSizeA,
+      colorRA, colorGA, colorBA);
+  }
+  virtual void encodeFragment(Unicode *text, int len, UnicodeMap *uMap,
+		      GBool primaryLR, GString *s);
 
-  void startPage(GfxState *state);
-  void clear();
-  void updateFont(GfxState *state);
+  virtual void computeLinePhysWidth(TextLine *line, UnicodeMap *uMap);
+
   void addChar(GfxState *state, double x, double y,
 	       double dx, double dy,
 	       CharCode c, int nBytes, Unicode *u, int uLen);
-  void incCharCount(int nChars);
-  void beginActualText(GfxState *state, Unicode *u, int uLen);
-  void endActualText(GfxState *state);
-  void addUnderline(double x0, double y0, double x1, double y1);
-  void addLink(double xMin, double yMin, double xMax, double yMax,
-	       Link *link);
 
   // output
   void writeReadingOrder(void *outputStream,
@@ -538,8 +579,18 @@ private:
 		UnicodeMap *uMap,
 		char *space, int spaceLen,
 		char *eol, int eolLen);
-  void encodeFragment(Unicode *text, int len, UnicodeMap *uMap,
-		      GBool primaryLR, GString *s);
+
+private:
+
+  void startPage(GfxState *state);
+  void clear();
+  void updateFont(GfxState *state);
+  void incCharCount(int nChars);
+  void beginActualText(GfxState *state, Unicode *u, int uLen);
+  void endActualText(GfxState *state);
+  void addUnderline(double x0, double y0, double x1, double y1);
+  void addLink(double xMin, double yMin, double xMax, double yMax,
+	       Link *link);
   GBool unicodeEffectiveTypeLOrNum(Unicode u, Unicode left, Unicode right);
   GBool unicodeEffectiveTypeR(Unicode u, Unicode left, Unicode right);
 
@@ -593,7 +644,6 @@ private:
   int getCharDirection(TextChar *ch, TextChar *left, TextChar *right);
   int assignPhysLayoutPositions(GList *columns);
   void assignLinePhysPositions(GList *columns);
-  void computeLinePhysWidth(TextLine *line, UnicodeMap *uMap);
   int assignColumnPhysPositions(GList *columns);
   void buildSuperLines(TextBlock *blk, GList *superLines);
   void assignSimpleLayoutPositions(GList *superLines, UnicodeMap *uMap);
@@ -784,6 +834,10 @@ public:
   // Turn extra processing for HTML conversion on or off.
   void enableHTMLExtras(GBool html) { control.html = html; }
 
+protected:
+  TextPage *text;		// text for the current page
+  TextOutputControl control;	// formatting parameters
+
 private:
 
   void generateBOM();
@@ -792,8 +846,6 @@ private:
   void *outputStream;		// output stream
   GBool needClose;		// need to close the output file?
 				//   (only if outputStream is a FILE*)
-  TextPage *text;		// text for the current page
-  TextOutputControl control;	// formatting parameters
   GBool ok;			// set up ok?
 };
 

@@ -9,6 +9,7 @@
 #include "PDFDoc.h"
 #include "TextOutputDev.h"
 
+#include "FontOutputDev.h"
 #include "ImageDataDev.h"
 #include "ImageInfoDev.h"
 
@@ -22,6 +23,7 @@ typedef struct LoaderConfig {
   GBool quiet = gTrue;
   GBool mapNumericCharNames = gFalse;
   GBool mapUnknownCharNames = gTrue;
+  GBool readUnicodeCMap = gTrue;
   unsigned int mode = 0;
 } LoaderConfig;
 
@@ -36,7 +38,9 @@ public:
     PdfLoader(LoaderConfig config, char *fileName, char *ownerPw = NULL, char *userPw = NULL);
     ~PdfLoader();
     std::vector<std::string> extractText();
+    std::vector<std::string> extractFontMap(std::map<unsigned int, NamedFontSpec> &fontSpecs);
     std::vector<PageImageInfo> extractPageInfo();
+    std::vector<std::string> extractFonts();
     std::vector<Image> extractImages(int pageNum);
     Image pageToImage(int pageNum, int dpi);
     bool isOk();
@@ -45,6 +49,11 @@ private:
   TextOutputControl textOutControl;
   PDFDoc *doc;
   GString *textFileName;
+  
+  GBool checkFontObject(Object *in, Object *out);
+  void scanFont(GfxFont *font);
+  void scanFonts(Object *obj);
+  void scanFonts(Dict *resDict);
 };
 
 #endif

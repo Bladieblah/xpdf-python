@@ -16,7 +16,7 @@ FOFI_DIR = $(XDIR)fofi/
 GOO_DIR = $(XDIR)goo/
 XPDF_DIR = $(XDIR)xpdf/
 
-PY_SRC = src/xpydf/PdfLoader.cc src/xpydf/ImageInfoDev.cc src/xpydf/ImageDataDev.cc
+PY_SRC = src/xpydf/PdfLoader.cc src/xpydf/ImageInfoDev.cc src/xpydf/ImageDataDev.cc src/xpydf/FontOutputDev.cc
 SPLASH_SRC = $(wildcard $(SPLASH_DIR)*.cc)
 FOFI_SRC = $(wildcard $(FOFI_DIR)*.cc)
 

@@ -203,38 +203,6 @@ static inline double dmax(double x, double y) {
 // TextChar
 //------------------------------------------------------------------------
 
-class TextChar {
-public:
-
-  TextChar(Unicode cA, int charPosA, int charLenA,
-	   double xMinA, double yMinA, double xMaxA, double yMaxA,
-	   int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
-	   TextFontInfo *fontA, double fontSizeA,
-	   double colorRA, double colorGA, double colorBA);
-
-  static int cmpX(const void *p1, const void *p2);
-  static int cmpY(const void *p1, const void *p2);
-  static int cmpCharPos(const void *p1, const void *p2);
-
-  Unicode c;
-  int charPos;
-  int charLen;
-  double xMin, yMin, xMax, yMax;
-  TextFontInfo *font;
-  double fontSize;
-  double colorR,
-         colorG,
-         colorB;
-
-  // group the byte-size fields to minimize object size
-  Guchar rot;
-  char rotated;
-  char clipped;
-  char invisible;
-  char spaceAfter;
-  char overlap;
-};
-
 TextChar::TextChar(Unicode cA, int charPosA, int charLenA,
 		   double xMinA, double yMinA, double xMaxA, double yMaxA,
 		   int rotA, GBool rotatedA, GBool clippedA, GBool invisibleA,
@@ -1559,13 +1527,13 @@ void TextPage::addChar(GfxState *state, double x, double y,
       } else {
 	j = i;
       }
-      chars->append(new TextChar(uBuf[j], charPos, nBytes,
-				 xMin, yMin, xMax, yMax,
-				 curRot, rotated, clipped,
-				 state->getRender() == 3 || alpha < 0.001,
-				 curFont, curFontSize,
-				 colToDbl(rgb.r), colToDbl(rgb.g),
-				 colToDbl(rgb.b)));
+      chars->append(textCharType(uBuf[j], charPos, nBytes,
+        xMin, yMin, xMax, yMax,
+        curRot, rotated, clipped,
+        state->getRender() == 3 || alpha < 0.001,
+        curFont, curFontSize,
+        colToDbl(rgb.r), colToDbl(rgb.g),
+        colToDbl(rgb.b)));
     }
   }
 

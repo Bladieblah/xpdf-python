@@ -749,6 +749,7 @@ GlobalParams::GlobalParams(const char *cfgFileName) {
   defaultPrinter = NULL;
   mapNumericCharNames = gTrue;
   mapUnknownCharNames = gFalse;
+  readUnicodeCMap = gTrue;
   mapExtTrueTypeFontsViaUnicode = gTrue;
   useTrueTypeUnicodeMapping = gFalse;
   droppedFonts = new GHash(gTrue);
@@ -3268,6 +3269,16 @@ GBool GlobalParams::getMapUnknownCharNames() {
   return map;
 }
 
+GBool GlobalParams::getReadUnicodeCMap() {
+  GBool read;
+
+  lockGlobalParams;
+  read = readUnicodeCMap;
+  unlockGlobalParams;
+  
+  return read;
+}
+
 GBool GlobalParams::getMapExtTrueTypeFontsViaUnicode() {
   GBool map;
 
@@ -3790,6 +3801,12 @@ void GlobalParams::setMapNumericCharNames(GBool map) {
 void GlobalParams::setMapUnknownCharNames(GBool map) {
   lockGlobalParams;
   mapUnknownCharNames = map;
+  unlockGlobalParams;
+}
+
+void GlobalParams::setReadUnicodeCMap(GBool read) {
+  lockGlobalParams;
+  readUnicodeCMap = read;
   unlockGlobalParams;
 }
 
