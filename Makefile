@@ -163,8 +163,10 @@ clean:
 cleanft:
 	rm -fv $(PROGNAME) $(FREE_OBJ)
 
+install:
+	pip install .
+
 test:
-	$(info $(FREE_DIRS))
-	$(info $(SKIP_DIRS))
+	python -m unittest -v
 
 -include $(OBJFILES:.o=.d)

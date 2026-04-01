@@ -3,13 +3,21 @@
  *
  * This file is modified by cmake.
  *
- * Copyright 2002-2015 Glyph & Cog, LLC
+ * Copyright 2002-2022 Glyph & Cog, LLC
  */
 
 #ifndef ACONF_H
 #define ACONF_H
 
-#include <aconf2.h>
+/*
+ * Speed up Windows compilation.  This will only work for the command
+ * line tools.
+ */
+/*
+ *#ifdef _WIN32
+ *#  define WIN32_LEAN_AND_MEAN
+ *#endif
+ */
 
 /*
  * Use A4 paper size instead of Letter for PostScript output.
@@ -57,15 +65,26 @@
 #cmakedefine HIGHLIGHTED_REGIONS
 
 /*
+ * Enable support for XDG config/state file paths.
+ */
+#cmakedefine01 USE_XDG
+
+/*
  * Full path for the system-wide xpdfrc file.
  */
-@SYSTEM_XPDFRC_DEFINE@
+#cmakedefine SYSTEM_XPDFRC "@SYSTEM_XPDFRC@"
 
 /*
  * Directory to use for the ${DATADIR} variable in the xpdfrc config
  * file.
  */
-@XPDFRC_DATADIR_DEFINE@
+#cmakedefine XPDFRC_DATADIR "@XPDFRC_DATADIR@"
+
+/*
+ * Directory where the Base14 fonts are installed -- URW Type 1 fonts
+ * on Linux, system TrueType fonts on Windows
+ */
+#cmakedefine BASE14_FONT_DIR "@BASE14_FONT_DIR@"
 
 /*
  * Various include files and functions.

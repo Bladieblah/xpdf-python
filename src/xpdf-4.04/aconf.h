@@ -3,13 +3,21 @@
  *
  * This file is modified by cmake.
  *
- * Copyright 2002-2015 Glyph & Cog, LLC
+ * Copyright 2002-2022 Glyph & Cog, LLC
  */
 
 #ifndef ACONF_H
 #define ACONF_H
 
-#include <aconf2.h>
+/*
+ * Speed up Windows compilation.  This will only work for the command
+ * line tools.
+ */
+/*
+ *#ifdef _WIN32
+ *#  define WIN32_LEAN_AND_MEAN
+ *#endif
+ */
 
 /*
  * Use A4 paper size instead of Letter for PostScript output.
@@ -29,7 +37,7 @@
 /*
  * Enable multithreading support.
  */
-#define MULTITHREADED 0
+#define MULTITHREADED 1
 
 /*
  * Enable C++ exceptions.
@@ -57,6 +65,11 @@
 /* #undef HIGHLIGHTED_REGIONS */
 
 /*
+ * Enable support for XDG config/state file paths.
+ */
+#define USE_XDG 0
+
+/*
  * Full path for the system-wide xpdfrc file.
  */
 /* #undef SYSTEM_XPDFRC */
@@ -68,23 +81,21 @@
 /* #undef XPDFRC_DATADIR */
 
 /*
+ * Directory where the Base14 fonts are installed -- URW Type 1 fonts
+ * on Linux, system TrueType fonts on Windows
+ */
+/* #undef BASE14_FONT_DIR */
+
+/*
  * Various include files and functions.
  */
 #define HAVE_MKSTEMP 1
 #define HAVE_MKSTEMPS 1
 #define HAVE_POPEN
 #define HAVE_STD_SORT 1
-
-#if defined(_WIN32) || defined(_WIN64) 
-#define HAVE_FSEEKO 0
-#define HAVE_FSEEK64 0
-#define HAVE_FSEEKI64 1
-#else
 #define HAVE_FSEEKO 1
 #define HAVE_FSEEK64 0
 #define HAVE_FSEEKI64 0
-#endif
-
 #define _FILE_OFFSET_BITS 64
 #define _LARGE_FILES 1
 #define _LARGEFILE_SOURCE 1
