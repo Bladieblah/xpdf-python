@@ -2,7 +2,7 @@
 //
 // XpdfWidget.h
 //
-// Copyright 2009-2021 Glyph & Cog, LLC
+// Copyright 2009-2025 Glyph & Cog, LLC
 //
 //========================================================================
 
@@ -12,7 +12,7 @@
 //! <br><br>
 //! <a href="changes.html">Change history</a>
 //! <br><br>
-//! Copyright 2009-2022 Glyph & Cog, LLC
+//! Copyright 2009-2025 Glyph & Cog, LLC
 
 //! \file
 
@@ -20,10 +20,6 @@
 #define XPDFWIDGET_H
 
 #include <aconf.h>
-
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
 
 #include <QAbstractScrollArea>
 
@@ -74,10 +70,10 @@ struct XpdfFindResult {
   /*! Page number. */
   int page;
 
-  /*! \name Bounding box. */
-  ///@{
-  double xMin, yMin, xMax, yMax;
-  ///@}
+  double xMin,  /*!< Bounding box - minimum x coordinate. */
+         yMin,  /*!< Bounding box - minimum y coordinate. */
+         xMax,  /*!< Bounding box - maximum x coordinate. */
+         yMax;  /*!< Bounding box - maximum y coordinate. */
 };
 
 //------------------------------------------------------------------------
@@ -140,6 +136,15 @@ public:
   //! limit the search to whole words
   static const int findWholeWord     = 0x00000010;
   //@}
+
+  //! Color modes, to be passed to the image conversion functions.
+  //! These can be used with XpdfWidget::convertPageToImage() and
+  //! XpdfWidget::convertRegionToImage().
+  enum ImageColorMode {
+    pdfImageColorRGB,
+    pdfImageColorGray,
+    pdfImageColorMono
+  };
 
   //! Initialize the XpdfWidget class, reading a configuration file.
   //! If \a configFileName is non-empty, the specified file is
@@ -238,7 +243,7 @@ public:
   //! Control the password dialog.
   //! If enabled, the viewer will show a password dialog for encrypted
   //! files; if disabled, it will simply return \c pdfErrEncrypted unless
-  //! the correct password is passed to \c pdfLoadFileWithPassword.  The
+  //! the correct password is passed to \c loadFile or \c loadMem.  The
   //! default is enabled.
   void showPasswordDialog(bool showDlg);
 
@@ -638,22 +643,30 @@ public:
   void setPrintDPI(int hDPI, int vDPI);
 #endif // XPDFWIDGET_PRINTING
 
-  //! Convert a page to a color image.
-  //! This function converts the page number \a page to a 24-bit RGB
-  //! bitmap, at a resolution of \a dpi dots per inch.  If \a
-  //! transparent is true, the returned image will be 32-bit ARGB
+  //! Convert a page to an image.
+  //! This function converts page number \a page to a bitmap, at a
+  //! resolution of \a dpi dots per inch.  The image is 24-bit RGB if
+  //! \a color is \c pdfImageColorRGB, 8-bit grayscale if \a color is
+  //! \c pdfImageColorGray, or 1-bit monochrome if \a color is \c
+  //! pdfImageColorMono. If \a transparent is true and \a color is \c
+  //! pdfImageColorRGB, the returned image will be 32-bit ARGB
   //! instead, and will include an alpha channel.
-  QImage convertPageToImage(int page, double dpi, bool transparent = false);
+  QImage convertPageToImage(int page, double dpi, bool transparent = false,
+			    ImageColorMode color = pdfImageColorRGB);
 
-  //! Convert a rectangular region of a page to a color image.
+  //! Convert a rectangular region of a page to an image.
   //! This function converts a rectangular region, defined by corners
   //! (\a x0,\a y0) and (\a x1,\a y1), of page number \a page to a
-  //! 24-bit RGB bitmap, at a resolution of \a dpi dots per inch.  If
-  //! \a transparent is true, the returned image will be 32-bit ARGB
-  //! instead, and will include an alpha channel.
+  //! bitmap, at a resolution of \a dpi dots per inch.  The image is
+  //! 24-bit RGB if \a color is \c pdfImageColorRGB, 8-bit grayscale
+  //! if \a color is \c pdfImageColorGray, or 1-bit monochrome if \a
+  //! color is \c pdfImageColorMono. If \a transparent is true and \a
+  //! color is \c pdfImageColorRGB, the returned image will be 32-bit
+  //! ARGB instead, and will include an alpha channel.
   QImage convertRegionToImage(int page, double x0, double y0,
 			      double x1, double y1, double dpi,
-			      bool transparent = false);
+			      bool transparent = false,
+			      ImageColorMode color = pdfImageColorRGB);
 
   //! Retrieve an embedded thumbnail image.
   //! This function returns the embedded thumbnail image for the

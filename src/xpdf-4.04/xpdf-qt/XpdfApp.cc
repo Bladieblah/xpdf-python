@@ -12,15 +12,14 @@
 #include <stdio.h>
 #include <QFileInfo>
 #include <QLocalSocket>
-#ifdef _WIN32
-#  include <shlobj.h>
-#endif
+#include <QMessageBox>
 #include "config.h"
 #include "parseargs.h"
 #include "GString.h"
 #include "GList.h"
 #include "gfile.h"
 #include "GlobalParams.h"
+#include "QtPDFCore.h"
 #include "XpdfViewer.h"
 #include "XpdfApp.h"
 #include "gmempp.h"
@@ -94,12 +93,15 @@ XpdfApp::XpdfApp(int &argc, char **argv):
   setApplicationVersion(xpdfVersion);
 
   ok = parseArgs(argDesc, &argc, argv);
-  if (!ok || printVersionArg || printHelpArg) {
+  if (printVersionArg) {
+    printf("xpdf version %s [www.xpdfreader.com]\n", xpdfVersion);
+    printf("%s\n", xpdfCopyright);
+    ::exit(99);
+  }
+  if (!ok || printHelpArg) {
     fprintf(stderr, "xpdf version %s [www.xpdfreader.com]\n", xpdfVersion);
     fprintf(stderr, "%s\n", xpdfCopyright);
-    if (!printVersionArg) {
-      printUsage("xpdf", "[<PDF-file> [:<page> | +<dest>]] ...", argDesc);
-    }
+    printUsage("xpdf", "[<PDF-file> [:<page> | +<dest>]] ...", argDesc);
     ::exit(99);
   }
 
@@ -166,10 +168,46 @@ XpdfApp::XpdfApp(int &argc, char **argv):
   if (printCommandsArg) {
     globalParams->setPrintCommands(gTrue);
   }
+  zoomScaleFactor = globalParams->getZoomScaleFactor();
+  if (zoomScaleFactor != 1) {
+    if (zoomScaleFactor <= 0) {
+      zoomScaleFactor = QtPDFCore::computeDisplayDpi() / 72.0;
+    }
+    GString *initialZoomStr = globalParams->getInitialZoom();
+    double initialZoom = atoi(initialZoomStr->getCString());
+    delete initialZoomStr;
+    if (initialZoom > 0) {
+      initialZoomStr = GString::format("{0:d}",
+				       (int)(initialZoom * zoomScaleFactor));
+      globalParams->setInitialZoom(initialZoomStr->getCString());
+      delete initialZoomStr;
+    }
+    int defaultFitZoom = globalParams->getDefaultFitZoom();
+    if (defaultFitZoom > 0) {
+      globalParams->setDefaultFitZoom((int)(defaultFitZoom * zoomScaleFactor));
+    }
+  }
+  GList *zoomValueList = globalParams->getZoomValues();
+  nZoomValues = 0;
+  for (i = 0; i < zoomValueList->getLength() && i < maxZoomValues; ++i) {
+    GString *val = (GString *)zoomValueList->get(i);
+    zoomValues[nZoomValues++] = atoi(val->getCString());
+  }
 
   errorEventType = QEvent::registerEventType();
 
   viewers = new GList();
+
+#ifndef DISABLE_SESSION_MANAGEMENT
+  //--- session management
+  connect(this, SIGNAL(saveStateRequest(QSessionManager&)),
+	  this, SLOT(saveSessionSlot(QSessionManager&)),
+	  Qt::DirectConnection);
+  if (isSessionRestored()) {
+    loadSession(sessionId().toLocal8Bit().constData(), gFalse);
+    return;
+  }
+#endif
 
   //--- remote server mode
   if (remoteServerArg[0]) {
@@ -299,13 +337,19 @@ int XpdfApp::getNumViewers() {
 }
 
 XpdfViewer *XpdfApp::newWindow(GBool fullScreen,
-			       const char *remoteServerName) {
+			       const char *remoteServerName,
+			       int x, int y, int width, int height) {
   XpdfViewer *viewer = new XpdfViewer(this, fullScreen);
   viewers->append(viewer);
   if (remoteServerName) {
     viewer->startRemoteServer(remoteServerName);
   }
-  viewer->tweakSize();
+  if (width > 0 && height > 0) {
+    viewer->resize(width, height);
+    viewer->move(x, y);
+  } else {
+    viewer->tweakSize();
+  }
   viewer->show();
   return viewer;
 }
@@ -315,7 +359,7 @@ GBool XpdfApp::openInNewWindow(QString fileName, int page, QString dest,
 			       const char *remoteServerName) {
   XpdfViewer *viewer;
 
-  viewer = XpdfViewer::create(this, fileName, page, dest, rotate,
+  viewer = XpdfViewer::create(this, fileName, 1, "", rotate,
 			      password, fullScreen);
   if (!viewer) {
     return gFalse;
@@ -326,6 +370,18 @@ GBool XpdfApp::openInNewWindow(QString fileName, int page, QString dest,
   }
   viewer->tweakSize();
   viewer->show();
+
+  // NB: do this after calling show() to avoid weird glitches if show
+  // resizes the new window
+  if (!dest.isEmpty()) {
+    viewer->gotoNamedDestination(dest);
+  } else {
+    if (page < 0) {
+      page = getSavedPageNumber(fileName);
+    }
+    viewer->gotoPage(page);
+  }
+
   return gTrue;
 }
 
@@ -344,11 +400,135 @@ void XpdfApp::closeWindowOrQuit(XpdfViewer *viewer) {
 void XpdfApp::quit() {
   XpdfViewer *viewer;
 
+  if (globalParams->getSaveSessionOnQuit()) {
+    saveSession(NULL, gFalse);
+  }
   while (viewers->getLength()) {
     viewer = (XpdfViewer *)viewers->del(0);
     viewer->close();
   }
   QApplication::quit();
+}
+
+void XpdfApp::saveSession(const char *id, GBool interactive) {
+  GString *path = globalParams->getSessionFile();
+  if (id) {
+#if 1
+    // We use a single session save file for session manager sessions
+    // -- this prevents using multiple sessions, but it also avoids
+    // dealing with stale session save files.
+    //
+    // We can't use the same save file for both session manager
+    // sessions and save-on-quit sessions, because the session manager
+    // sends a 'save' request immediately on starting, which will
+    // overwrite the last save-on-quit session.
+    path->append(".managed");
+#else
+    path->append('.');
+    path->append(id);
+#endif
+  }
+  FILE *out = openFile(path->getCString(), "wb");
+  if (!out) {
+    if (interactive) {
+      GString *msg = GString::format("Couldn't write the session file '{0:t}'",
+				     path);
+      QMessageBox::warning(NULL, "Xpdf Error", msg->getCString());
+      delete msg;
+    }
+    delete path;
+    return;
+  }
+  delete path;
+
+  fprintf(out, "xpdf-session-1\n");
+  for (int i = 0; i < viewers->getLength(); ++i) {
+    XpdfViewer *viewer = (XpdfViewer *)viewers->get(i);
+    fprintf(out, "window %d %d %d %d\n",
+	    viewer->x(), viewer->y(), viewer->width(), viewer->height());
+    viewer->saveSession(out, 1);
+  }
+
+  fclose(out);
+}
+
+void XpdfApp::loadSession(const char *id, GBool interactive) {
+  GString *path = globalParams->getSessionFile();
+  if (id) {
+#if 1
+    // see comment in XpdfApp::saveSession
+    path->append(".managed");
+#else
+    path->append('.');
+    path->append(id);
+#endif
+  }
+  FILE *in = openFile(path->getCString(), "rb");
+  if (!in) {
+    if (interactive) {
+      GString *msg = GString::format("Couldn't read the session file '{0:t}'",
+				     path);
+      QMessageBox::warning(NULL, "Xpdf Error", msg->getCString());
+      delete msg;
+    }
+    delete path;
+    return;
+  }
+  delete path;
+
+  char line[1024];
+  if (!fgets(line, sizeof(line), in)) {
+    fclose(in);
+    return;
+  }
+  size_t n = strlen(line);
+  if (n > 0 && line[n-1] == '\n') {
+    line[--n] = '\0';
+  }
+  if (n > 0 && line[n-1] == '\r') {
+    line[--n] = '\0';
+  }
+  if (strcmp(line, "xpdf-session-1")) {
+    fclose(in);
+    return;
+  }
+
+  // if this function is called explicitly (e.g., bound to a key), and
+  // there is a single empty viewer (because the user has just started
+  // xpdf), we want to close that viewer
+  XpdfViewer *viewerToClose = nullptr;
+  if (viewers->getLength() == 1 &&
+      ((XpdfViewer *)viewers->get(0))->isEmpty()) {
+    viewerToClose = (XpdfViewer *)viewers->get(0);
+  }
+
+  while (fgets(line, sizeof(line), in)) {
+    int x, y, width, height;
+    if (sscanf(line, "window %d %d %d %d\n", &x, &y, &width, &height) != 4) {
+      fclose(in);
+      return;
+    }
+
+    XpdfViewer *viewer = newWindow(gFalse, NULL, x, y, width, height);
+    viewer->loadSession(in, 1);
+
+    if (viewerToClose) {
+      closeWindowOrQuit(viewerToClose);
+      viewerToClose = nullptr;
+    }
+  }
+
+  fclose(in);
+}
+
+void XpdfApp::saveSessionSlot(QSessionManager &sessionMgr) {
+  // Removing the saveSessionSlot function/slot would be better, but
+  // that causes problems with moc/cmake -- so just comment out the
+  // guts. In any case, this function should never even be called if
+  // DISABLE_SESSION_MANAGEMENT is defined.
+#ifndef DISABLE_SESSION_MANAGEMENT
+  saveSession(sessionMgr.sessionId().toLocal8Bit().constData(), gFalse);
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -413,22 +593,13 @@ int XpdfApp::getSavedPageNumber(const QString &fileName) {
 void XpdfApp::readPagesFile() {
   // construct the file name (first time only)
   if (savedPagesFileName.isEmpty()) {
+    GString *s = globalParams->getPagesFile();
 #ifdef _WIN32
-    char path[MAX_PATH];
-    if (SHGetFolderPath(NULL, CSIDL_APPDATA, NULL,
-			SHGFP_TYPE_CURRENT, path) != S_OK) {
-      return;
-    }
-    savedPagesFileName = QString::fromLocal8Bit(path);
-    savedPagesFileName.append("/xpdf");
-    CreateDirectory(savedPagesFileName.toLocal8Bit().constData(), NULL);
-    savedPagesFileName.append("/xpdf.pages");
+    savedPagesFileName = QString::fromLocal8Bit(s->getCString());
 #else
-    GString *path = getHomeDir();
-    savedPagesFileName = QString::fromUtf8(path->getCString());
-    delete path;
-    savedPagesFileName.append("/.xpdf.pages");
+    savedPagesFileName = QString::fromUtf8(s->getCString());
 #endif
+    delete s;
   }
 
   // no change since last read, so no need to re-read

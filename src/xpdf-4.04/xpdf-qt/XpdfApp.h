@@ -14,8 +14,10 @@
 #include <QApplication>
 #include <QColor>
 #include <QDateTime>
+#include <QSessionManager>
 #include "gtypes.h"
 
+class GString;
 class GList;
 class XpdfViewer;
 
@@ -32,6 +34,10 @@ struct XpdfSavedPageNumber {
 #define maxSavedPageNumbers 100
 
 //------------------------------------------------------------------------
+
+#define maxZoomValues 100
+
+//------------------------------------------------------------------------
 // XpdfApp
 //------------------------------------------------------------------------
 
@@ -46,7 +52,9 @@ public:
   int getNumViewers();
 
   XpdfViewer *newWindow(GBool fullScreen = gFalse,
-			const char *remoteServerName = NULL);
+			const char *remoteServerName = NULL,
+			int x = -1, int y = -1,
+			int width = -1, int height = -1);
 
   GBool openInNewWindow(QString fileName, int page = 1,
 			QString dest = QString(),
@@ -67,6 +75,14 @@ public:
 
   void quit();
 
+  // Save the current session state. For managed sessions, {id} is the
+  // session ID.
+  void saveSession(const char *id, GBool interactive);
+
+  // Load the last saved session. For managed sessions, {id} is the
+  // session ID to load.
+  void loadSession(const char *id, GBool interactive);
+
   //--- for use by XpdfViewer
 
   int getErrorEventType() { return errorEventType; }
@@ -75,6 +91,13 @@ public:
   const QColor &getFullScreenMatteColor() { return fsMatteColor; }
   const QColor &getSelectionColor() { return selectionColor; }
   GBool getReverseVideo() { return reverseVideo; }
+  double getZoomScaleFactor() { return zoomScaleFactor; }
+  int getNZoomValues() { return nZoomValues; }
+  int getZoomValue(int idx) { return zoomValues[idx]; }
+
+private slots:
+
+  void saveSessionSlot(QSessionManager &sessionMgr);
 
 private:
 
@@ -87,6 +110,9 @@ private:
   QColor fsMatteColor;
   QColor selectionColor;
   GBool reverseVideo;
+  double zoomScaleFactor;
+  int zoomValues[maxZoomValues];
+  int nZoomValues;
 
   GList *viewers;		// [XpdfViewer]
 

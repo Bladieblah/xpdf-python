@@ -8,10 +8,6 @@
 
 #include <aconf.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -1266,7 +1262,8 @@ void XpdfWidget::setPrintDPI(int hDPI, int vDPI) {
 
 #endif // XPDFWIDGET_PRINTING
 
-QImage XpdfWidget::convertPageToImage(int page, double dpi, bool transparent) {
+QImage XpdfWidget::convertPageToImage(int page, double dpi, bool transparent,
+				      ImageColorMode color) {
   try {
     PDFDoc *doc = core->getDoc();
     if (!doc) {
@@ -1275,18 +1272,34 @@ QImage XpdfWidget::convertPageToImage(int page, double dpi, bool transparent) {
     if (page < 1 || page > doc->getNumPages()) {
       return QImage();
     }
-    if (transparent) {
-      SplashColor paperColor;
-      paperColor[0] = paperColor[1] = paperColor[2] = 0xff;  // unused
-      SplashOutputDev *out = new SplashOutputDev(splashModeRGB8, 1, gFalse,
-						 paperColor);
+    SplashColorMode mode;
+    SplashColor paperColor;
+    QImage::Format format;
+    if (color == pdfImageColorMono) {
+      mode = splashModeMono1;
+      paperColor[0] = 0xff;
+      format = QImage::Format_Mono;
+    } else if (color == pdfImageColorGray) {
+      mode = splashModeMono8;
+      paperColor[0] = 0xff;
+      format = QImage::Format_Grayscale8;
+    } else {
+      mode = splashModeRGB8;
+      paperColor[0] = paperColor[1] = paperColor[2] = 0xff;
+      if (transparent) {
+	format = QImage::Format_ARGB32;
+      } else {
+	format = QImage::Format_RGB888;
+      }
+    }
+    if (format == QImage::Format_ARGB32) {
+      SplashOutputDev *out = new SplashOutputDev(mode, 1, gFalse, paperColor);
       out->setNoComposite(gTrue);
       out->startDoc(doc->getXRef());
-      doc->displayPage(out, page, dpi, dpi, core->getRotate(),
+      doc->displayPage(out, NULL, page, dpi, dpi, core->getRotate(),
 		       gFalse, gTrue, gFalse);
       SplashBitmap *bitmap = out->getBitmap();
-      QImage img(bitmap->getWidth(), bitmap->getHeight(),
-		 QImage::Format_ARGB32);
+      QImage img(bitmap->getWidth(), bitmap->getHeight(), format);
       Guchar *pix = bitmap->getDataPtr();
       Guchar *alpha = bitmap->getAlphaPtr();
       Guint *argb = (Guint *)img.bits();
@@ -1301,17 +1314,14 @@ QImage XpdfWidget::convertPageToImage(int page, double dpi, bool transparent) {
       delete out;
       return img;
     } else {
-      SplashColor paperColor;
-      paperColor[0] = paperColor[1] = paperColor[2] = 0xff;
-      SplashOutputDev *out = new SplashOutputDev(splashModeRGB8, 4, gFalse,
-						 paperColor);
+      SplashOutputDev *out = new SplashOutputDev(mode, 4, gFalse, paperColor);
       out->startDoc(doc->getXRef());
-      doc->displayPage(out, page, dpi, dpi, core->getRotate(),
+      doc->displayPage(out, NULL, page, dpi, dpi, core->getRotate(),
 		       gFalse, gTrue, gFalse);
       SplashBitmap *bitmap = out->getBitmap();
       QImage *img = new QImage((const uchar *)bitmap->getDataPtr(),
 			       bitmap->getWidth(), bitmap->getHeight(),
-			       QImage::Format_RGB888);
+			       format);
       // force a copy
       QImage img2(img->copy());
       delete img;
@@ -1325,7 +1335,8 @@ QImage XpdfWidget::convertPageToImage(int page, double dpi, bool transparent) {
 
 QImage XpdfWidget::convertRegionToImage(int page, double x0, double y0,
 					double x1, double y1, double dpi,
-					bool transparent) {
+					bool transparent,
+					ImageColorMode color) {
   try {
     PDFDoc *doc = core->getDoc();
     if (!doc) {
@@ -1367,19 +1378,35 @@ QImage XpdfWidget::convertRegionToImage(int page, double x0, double y0,
       sliceH = (int)(k * (y1 - y0));
     }
 
-    if (transparent) {
-      SplashColor paperColor;
-      paperColor[0] = paperColor[1] = paperColor[2] = 0xff;  // unused
-      SplashOutputDev *out = new SplashOutputDev(splashModeRGB8, 1, gFalse,
-						 paperColor);
+    SplashColorMode mode;
+    SplashColor paperColor;
+    QImage::Format format;
+    if (color == pdfImageColorMono) {
+      mode = splashModeMono1;
+      paperColor[0] = 0xff;
+      format = QImage::Format_Mono;
+    } else if (color == pdfImageColorGray) {
+      mode = splashModeMono8;
+      paperColor[0] = 0xff;
+      format = QImage::Format_Grayscale8;
+    } else {
+      mode = splashModeRGB8;
+      paperColor[0] = paperColor[1] = paperColor[2] = 0xff;
+      if (transparent) {
+	format = QImage::Format_ARGB32;
+      } else {
+	format = QImage::Format_RGB888;
+      }
+    }
+    if (format == QImage::Format_ARGB32) {
+      SplashOutputDev *out = new SplashOutputDev(mode, 1, gFalse, paperColor);
       out->setNoComposite(gTrue);
       out->startDoc(doc->getXRef());
-      doc->displayPageSlice(out, page, dpi, dpi, core->getRotate(),
+      doc->displayPageSlice(out, NULL, page, dpi, dpi, core->getRotate(),
 			    gFalse, gTrue, gFalse,
 			    sliceX, sliceY, sliceW, sliceH);
       SplashBitmap *bitmap = out->getBitmap();
-      QImage img(bitmap->getWidth(), bitmap->getHeight(),
-		 QImage::Format_ARGB32);
+      QImage img(bitmap->getWidth(), bitmap->getHeight(), format);
       Guchar *pix = bitmap->getDataPtr();
       Guchar *alpha = bitmap->getAlphaPtr();
       Guint *argb = (Guint *)img.bits();
@@ -1394,18 +1421,15 @@ QImage XpdfWidget::convertRegionToImage(int page, double x0, double y0,
       delete out;
       return img;
     } else {
-      SplashColor paperColor;
-      paperColor[0] = paperColor[1] = paperColor[2] = 0xff;
-      SplashOutputDev *out = new SplashOutputDev(splashModeRGB8, 4, gFalse,
-						 paperColor);
+      SplashOutputDev *out = new SplashOutputDev(mode, 4, gFalse, paperColor);
       out->startDoc(doc->getXRef());
-      doc->displayPageSlice(out, page, dpi, dpi, core->getRotate(),
+      doc->displayPageSlice(out, NULL, page, dpi, dpi, core->getRotate(),
 			    gFalse, gTrue, gFalse,
 			    sliceX, sliceY, sliceW, sliceH);
       SplashBitmap *bitmap = out->getBitmap();
       QImage *img = new QImage((const uchar *)bitmap->getDataPtr(),
 			       bitmap->getWidth(), bitmap->getHeight(),
-			       QImage::Format_RGB888);
+			       format);
       // force a copy
       QImage img2(img->copy());
       delete img;
@@ -1572,7 +1596,7 @@ bool XpdfWidget::find(const QString &text, int flags) {
     if (!core->getDoc()) {
       return false;
     }
-    len = text.length();
+    len = (int)text.length();
     u = (Unicode *)gmallocn(len, sizeof(Unicode));
     for (i = 0; i < len; ++i) {
       u[i] = (Unicode)text[i].unicode();
@@ -1597,7 +1621,7 @@ QVector<XpdfFindResult> XpdfWidget::findAll(const QString &text, int firstPage,
     if (!core->getDoc()) {
       return v;
     }
-    int len = text.length();
+    int len = (int)text.length();
     Unicode *u = (Unicode *)gmallocn(len, sizeof(Unicode));
     for (int i = 0; i < len; ++i) {
       u[i] = (Unicode)text[i].unicode();

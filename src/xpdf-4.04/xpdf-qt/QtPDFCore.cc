@@ -8,10 +8,6 @@
 
 #include <aconf.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include <math.h>
 #include <string.h>
 #include <QApplication>
@@ -23,6 +19,7 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QProcess>
+#include <QScreen>
 #include <QScrollBar>
 #include <QStyle>
 #include <QUrl>
@@ -55,8 +52,6 @@ QtPDFCore::QtPDFCore(QWidget *viewportA,
 		     GBool reverseVideo):
   PDFCore(splashModeRGB8, 4, reverseVideo, paperColor)
 {
-  int dpiX, dpiY;
-
   viewport = viewportA;
   hScrollBar = hScrollBarA;
   vScrollBar = vScrollBarA;
@@ -75,6 +70,7 @@ QtPDFCore::QtPDFCore(QWidget *viewportA,
   lastLinkAction = NULL;
 
   dragging = gFalse;
+
 
   panning = gFalse;
 
@@ -95,23 +91,28 @@ QtPDFCore::QtPDFCore(QWidget *viewportA,
   panEnabled = gTrue;
   showPasswordDialog = gTrue;
 
-  // get Qt's HiDPI scale factor
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
-  scaleFactor = viewport->devicePixelRatioF();
-#elif QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  scaleFactor = viewport->devicePixelRatio();
-#else
-  scaleFactor = 1;
-#endif
-
-  // get the display resolution (used for HiDPI scaling)
-  dpiX = viewport->logicalDpiX();
-  dpiY = viewport->logicalDpiY();
-  displayDpi = dpiX < dpiY ? dpiX : dpiY;
-  displayDpi = (int)(displayDpi * scaleFactor);
+  scaleFactor = computeScaleFactor();
+  displayDpi = computeDisplayDpi();
 }
 
 QtPDFCore::~QtPDFCore() {
+}
+
+double QtPDFCore::computeScaleFactor() {
+  // get Qt's HiDPI scale factor
+  QGuiApplication *app = (QGuiApplication *)QGuiApplication::instance();
+  QScreen *screen = app->primaryScreen();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+  return screen->devicePixelRatio();
+#else
+  return 1;
+#endif
+}
+
+int QtPDFCore::computeDisplayDpi() {
+  QGuiApplication *app = (QGuiApplication *)QGuiApplication::instance();
+  QScreen *screen = app->primaryScreen();
+  return (int)(screen->logicalDotsPerInch() * computeScaleFactor());
 }
 
 //------------------------------------------------------------------------

@@ -154,6 +154,22 @@ public:
   // Execute a command [cmd], with [event] for context.
   void execCmd(const char *cmd, QInputEvent *event);
 
+  // Used by XpdfApp::saveSession() to save session info for one
+  // window.
+  void saveSession(FILE *out, int format);
+
+  // Used by XpdfApp::loadSession() to load a session for one window.
+  void loadSession(FILE *in, int format);
+
+  // Returns true if this viewer contains a single empty tab.
+  GBool isEmpty();
+
+  // Goto [page] in the current tab.
+  void gotoPage(int page);
+
+  // Goto [destName] in the current tab.
+  void gotoNamedDestination(QString destName);
+
 public slots:
 
   bool close();
@@ -184,8 +200,10 @@ private slots:
 
   void openMenuAction();
   void openInNewWinMenuAction();
+  void closeMenuAction();
   void reloadMenuAction();
   void saveAsMenuAction();
+  void loadSessionMenuAction();
   void saveImageMenuAction();
 #if XPDFWIDGET_PRINTING
   void printMenuAction();
@@ -198,6 +216,7 @@ private slots:
   void sideBySideContinuousModeMenuAction();
   void horizontalContinuousModeMenuAction();
   void fullScreenMenuAction(bool checked);
+  void reverseVideoMenuAction(bool checked);
   void rotateClockwiseMenuAction();
   void rotateCounterclockwiseMenuAction();
   void zoomToSelectionMenuAction();
@@ -292,12 +311,14 @@ private:
   void cmdHideToolbar(GString *args[], int nArgs, QInputEvent *event);
   void cmdHorizontalContinuousMode(GString *args[], int nArgs, QInputEvent *event);
   void cmdLinearSelectMode(GString *args[], int nArgs, QInputEvent *event);
+  void cmdLoadSession(GString *args[], int nArgs, QInputEvent *event);
   void cmdLoadTabState(GString *args[], int nArgs, QInputEvent *event);
   void cmdNewTab(GString *args[], int nArgs, QInputEvent *event);
   void cmdNewWindow(GString *args[], int nArgs, QInputEvent *event);
   void cmdNextPage(GString *args[], int nArgs, QInputEvent *event);
   void cmdNextPageNoScroll(GString *args[], int nArgs, QInputEvent *event);
   void cmdNextTab(GString *args[], int nArgs, QInputEvent *event);
+  void cmdNormalVideoMode(GString *args[], int nArgs, QInputEvent *event);
   void cmdOpen(GString *args[], int nArgs, QInputEvent *event);
   void cmdOpenErrorWindow(GString *args[], int nArgs, QInputEvent *event);
   void cmdOpenFile(GString *args[], int nArgs, QInputEvent *event);
@@ -323,11 +344,13 @@ private:
   void cmdQuit(GString *args[], int nArgs, QInputEvent *event);
   void cmdRaise(GString *args[], int nArgs, QInputEvent *event);
   void cmdReload(GString *args[], int nArgs, QInputEvent *event);
+  void cmdReverseVideoMode(GString *args[], int nArgs, QInputEvent *event);
   void cmdRotateCW(GString *args[], int nArgs, QInputEvent *event);
   void cmdRotateCCW(GString *args[], int nArgs, QInputEvent *event);
   void cmdRun(GString *args[], int nArgs, QInputEvent *event);
   void cmdSaveAs(GString *args[], int nArgs, QInputEvent *event);
   void cmdSaveImage(GString *args[], int nArgs, QInputEvent *event);
+  void cmdSaveSession(GString *args[], int nArgs, QInputEvent *event);
   void cmdSaveTabState(GString *args[], int nArgs, QInputEvent *event);
   void cmdScrollDown(GString *args[], int nArgs, QInputEvent *event);
   void cmdScrollDownNextPage(GString *args[], int nArgs, QInputEvent *event);
@@ -363,6 +386,7 @@ private:
   void cmdToggleContinuousMode(GString *args[], int nArgs, QInputEvent *event);
   void cmdToggleFullScreenMode(GString *args[], int nArgs, QInputEvent *event);
   void cmdToggleMenuBar(GString *args[], int nArgs, QInputEvent *event);
+  void cmdToggleReverseVideoMode(GString *args[], int nArgs, QInputEvent *event);
   void cmdToggleSelectMode(GString *args[], int nArgs, QInputEvent *event);
   void cmdToggleSidebar(GString *args[], int nArgs, QInputEvent *event);
   void cmdToggleSidebarMoveResizeWin(GString *args[], int nArgs, QInputEvent *event);
@@ -377,6 +401,7 @@ private:
   void cmdZoomOut(GString *args[], int nArgs, QInputEvent *event);
   void cmdZoomPercent(GString *args[], int nArgs, QInputEvent *event);
   void cmdZoomToSelection(GString *args[], int nArgs, QInputEvent *event);
+  int getFindCaseFlag();
   int scaleScroll(int delta);
   void followLink(QInputEvent *event, GBool onlyIfNoSel,
 		  GBool newTab, GBool newWindow);
@@ -441,6 +466,7 @@ private:
   QMenuBar *mainMenu;
   QMenu *displayModeSubmenu;
   QAction *fullScreenMenuItem;
+  QAction *reverseVideoMenuItem;
   QAction *toggleToolbarMenuItem;
   QAction *toggleSidebarMenuItem;
   QAction *viewPageLabelsMenuItem;
@@ -462,7 +488,9 @@ private:
   QList<QVariant> indicatorIcons;
   QList<QVariant> indicatorErrIcons;
   QLineEdit *findEdit;
+  QAction *findCaseInsensitiveAction;
   QAction *findCaseSensitiveAction;
+  QAction *findSmartCaseAction;
   QAction *findWholeWordsAction;
 
   // sidebar pane
@@ -482,6 +510,8 @@ private:
   GList *tabInfo;		// [XpdfTabInfo]
   XpdfTabInfo *currentTab;
   XpdfTabInfo *lastOpenedTab;
+
+  bool reverseVideo;
 
   double scaleFactor;
 

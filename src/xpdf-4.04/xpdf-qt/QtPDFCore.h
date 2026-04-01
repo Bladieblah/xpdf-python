@@ -11,10 +11,6 @@
 
 #include <aconf.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include <QDateTime>
 #include "gtypes.h"
 #include "SplashTypes.h"
@@ -162,6 +158,9 @@ public:
   void paintEvent(int x, int y, int w, int h);
   void scrollEvent();
   virtual void tick();
+
+  static double computeScaleFactor();
+  static int computeDisplayDpi();
 
 private:
 

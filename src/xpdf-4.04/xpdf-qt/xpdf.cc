@@ -11,6 +11,7 @@
 #include "gmem.h"
 #include "Object.h"
 #include "XpdfApp.h"
+#include "gmempp.h"
 
 int main(int argc, char *argv[]) {
   int exitCode;

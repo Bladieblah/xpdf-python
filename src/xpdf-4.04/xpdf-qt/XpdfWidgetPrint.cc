@@ -60,7 +60,7 @@ XpdfWidget::ErrorCode printPDF(PDFDoc *doc, QPrinter *prt,
   CGContextRef ctx;
   CGAffineTransform pageTransform;
   QPrinter::ColorMode colorMode;
-  QSizeF paperSize;
+  QSize paperSize;
   QPrinter::PaperSource paperSource;
   QPageLayout::Orientation pageOrientation;
   FILE *f;
@@ -117,7 +117,7 @@ XpdfWidget::ErrorCode printPDF(PDFDoc *doc, QPrinter *prt,
   //--- get other parameters
 
   colorMode = prt->colorMode();
-  paperSize = prt->paperSize(QPrinter::Point);
+  paperSize = prt->pageLayout().pageSize().sizePoints();
   paperSource = prt->paperSource();
   pageOrientation = prt->pageLayout().orientation();
 
@@ -325,8 +325,8 @@ XpdfWidget::ErrorCode printPDF(PDFDoc *doc, QPrinter *prt,
 			       int hDPI, int vDPI,
 			       XpdfWidget *widget) {
   int startPage, endPage;
-  QPrinter::PaperSize paperSize;
-  QSizeF paperSizePts;
+  QPageSize::PageSizeId paperSize;
+  QSize paperSizePts;
   QPrinter::PaperSource paperSource;
   QPrinter::DuplexMode duplex;
   GString *psFileName;
@@ -356,8 +356,8 @@ XpdfWidget::ErrorCode printPDF(PDFDoc *doc, QPrinter *prt,
 
   //--- get other parameters
 
-  paperSize = prt->paperSize();
-  paperSizePts = prt->paperSize(QPrinter::Point);
+  paperSize = prt->pageLayout().pageSize().id();
+  paperSizePts = prt->pageLayout().pageSize().sizePoints();
   paperSource = prt->paperSource();
   duplex = prt->duplex();
 
@@ -395,7 +395,7 @@ XpdfWidget::ErrorCode printPDF(PDFDoc *doc, QPrinter *prt,
       fclose(psFile);
       goto err1;
     }
-    doc->displayPage(psOut, pg, 72, 72, 0,
+    doc->displayPage(psOut, NULL, pg, 72, 72, 0,
 		     !globalParams->getPSUseCropBoxAsPage(),
 		     gTrue, gTrue);
     widget->updatePrintStatus(pg + 1, startPage, endPage);
@@ -425,11 +425,11 @@ XpdfWidget::ErrorCode printPDF(PDFDoc *doc, QPrinter *prt,
     nOptions = 0;
 
     switch (paperSize) {
-    case QPrinter::A4:      paperSizeStr = "A4";     break;
-    case QPrinter::Comm10E: paperSizeStr = "COM10";  break;
-    case QPrinter::DLE:     paperSizeStr = "DL";     break;
-    case QPrinter::Legal:   paperSizeStr = "Legal";  break;
-    case QPrinter::Letter:  paperSizeStr = "Letter"; break;
+    case QPageSize::A4:      paperSizeStr = "A4";     break;
+    case QPageSize::Comm10E: paperSizeStr = "COM10";  break;
+    case QPageSize::DLE:     paperSizeStr = "DL";     break;
+    case QPageSize::Legal:   paperSizeStr = "Legal";  break;
+    case QPageSize::Letter:  paperSizeStr = "Letter"; break;
     default:                paperSizeStr = NULL;     break;
     }
     switch (paperSource) {
