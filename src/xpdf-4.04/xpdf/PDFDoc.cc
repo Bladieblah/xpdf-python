@@ -8,10 +8,6 @@
 
 #include <aconf.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -26,6 +22,7 @@
 #include "GlobalParams.h"
 #include "Page.h"
 #include "Catalog.h"
+#include "Annot.h"
 #include "Stream.h"
 #include "XRef.h"
 #include "Link.h"
@@ -254,6 +251,7 @@ void PDFDoc::init(PDFCore *coreA) {
   str = NULL;
   xref = NULL;
   catalog = NULL;
+  annots = NULL;
 #ifndef DISABLE_OUTLINE
   outline = NULL;
 #endif
@@ -326,6 +324,9 @@ GBool PDFDoc::setup2(GString *ownerPassword, GString *userPassword,
     return gFalse;
   }
 
+  // initialize the Annots object
+  annots = new Annots(this);
+
   return gTrue;
 }
 
@@ -338,6 +339,9 @@ PDFDoc::~PDFDoc() {
     delete outline;
   }
 #endif
+  if (annots) {
+    delete annots;
+  }
   if (catalog) {
     delete catalog;
   }
@@ -431,7 +435,7 @@ GBool PDFDoc::checkEncryption(GString *ownerPassword, GString *userPassword) {
   return ret;
 }
 
-void PDFDoc::displayPage(OutputDev *out, int page,
+void PDFDoc::displayPage(OutputDev *out, LocalParams *localParams, int page,
 			 double hDPI, double vDPI, int rotate,
 			 GBool useMediaBox, GBool crop, GBool printing,
 			 GBool (*abortCheckCbk)(void *data),
@@ -439,12 +443,13 @@ void PDFDoc::displayPage(OutputDev *out, int page,
   if (globalParams->getPrintCommands()) {
     printf("***** page %d *****\n", page);
   }
-  catalog->getPage(page)->display(out, hDPI, vDPI,
+  catalog->getPage(page)->display(out, localParams, hDPI, vDPI,
 				  rotate, useMediaBox, crop, printing,
 				  abortCheckCbk, abortCheckCbkData);
 }
 
-void PDFDoc::displayPages(OutputDev *out, int firstPage, int lastPage,
+void PDFDoc::displayPages(OutputDev *out, LocalParams *localParams,
+			  int firstPage, int lastPage,
 			  double hDPI, double vDPI, int rotate,
 			  GBool useMediaBox, GBool crop, GBool printing,
 			  GBool (*abortCheckCbk)(void *data),
@@ -457,24 +462,26 @@ void PDFDoc::displayPages(OutputDev *out, int firstPage, int lastPage,
       printf("[processing page %d]\n", page);
       fflush(stdout);
     }
-    displayPage(out, page, hDPI, vDPI, rotate, useMediaBox, crop, printing,
+    displayPage(out, localParams, page, hDPI, vDPI, rotate,
+		useMediaBox, crop, printing,
 		abortCheckCbk, abortCheckCbkData);
     catalog->doneWithPage(page);
   }
 }
 
-void PDFDoc::displayPageSlice(OutputDev *out, int page,
-			      double hDPI, double vDPI, int rotate,
+void PDFDoc::displayPageSlice(OutputDev *out, LocalParams *localParams,
+			      int page, double hDPI, double vDPI, int rotate,
 			      GBool useMediaBox, GBool crop, GBool printing,
 			      int sliceX, int sliceY, int sliceW, int sliceH,
 			      GBool (*abortCheckCbk)(void *data),
 			      void *abortCheckCbkData) {
-  catalog->getPage(page)->displaySlice(out, hDPI, vDPI,
+  catalog->getPage(page)->displaySlice(out, localParams, hDPI, vDPI,
 				       rotate, useMediaBox, crop,
 				       sliceX, sliceY, sliceW, sliceH,
 				       printing,
 				       abortCheckCbk, abortCheckCbkData);
 }
+
 
 Links *PDFDoc::getLinks(int page) {
   return catalog->getPage(page)->getLinks();

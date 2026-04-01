@@ -11,10 +11,6 @@
 
 #include <aconf.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include <stdio.h>
 #ifdef _WIN32
 #  include <windows.h>
@@ -300,11 +296,14 @@ public:
   GBool getTextKeepTinyChars();
   GString *getInitialZoom();
   int getDefaultFitZoom();
+  double getZoomScaleFactor();
+  GList *getZoomValues();
   GString *getInitialDisplayMode();
   GBool getInitialToolbarState();
   GBool getInitialSidebarState();
   int getInitialSidebarWidth();
   GString *getInitialSelectMode();
+  GBool getInitialMaximized();
   int getMaxTileWidth();
   int getMaxTileHeight();
   int getTileCacheSize();
@@ -327,12 +326,14 @@ public:
   GBool getDrawAnnotations();
   GBool getDrawFormFields();
   GBool getEnableXFA();
+  GBool getPreferXFAFieldValues();
   GBool getOverprintPreview() { return overprintPreview; }
   GString *getPaperColor();
   GString *getMatteColor();
   GString *getFullScreenMatteColor();
   GString *getSelectionColor();
   GBool getReverseVideoInvertImages();
+  GBool getAllowLinksToChangeZoom();
   GString *getLaunchCommand() { return launchCommand; }
   GString *getMovieCommand() { return movieCommand; }
   GString *getDefaultPrinter();
@@ -340,12 +341,18 @@ public:
   GBool getMapUnknownCharNames();
   GBool getMapExtTrueTypeFontsViaUnicode();
   GBool getUseTrueTypeUnicodeMapping();
+  GBool getIgnoreWrongSizeToUnicode();
   GBool isDroppedFont(const char *fontName);
+  GBool getSeparateRotatedText();
+  GBool getDiscardCoveredText();
   GList *getKeyBinding(int code, int mods, int context);
   GList *getAllKeyBindings();
   int getNumPopupMenuCmds();
   PopupMenuCmd *getPopupMenuCmd(int idx);
+  GString *getPagesFile();
   GString *getTabStateFile();
+  GString *getSessionFile();
+  GBool getSaveSessionOnQuit();
   GBool getSavePageNumbers();
   GBool getPrintCommands();
   GBool getPrintStatusInfo();
@@ -387,6 +394,7 @@ public:
   void setTextPageBreaks(GBool pageBreaks);
   void setTextKeepTinyChars(GBool keep);
   void setInitialZoom(char *s);
+  void setDefaultFitZoom(int z);
   GBool setEnableFreeType(char *s);
   GBool setAntialias(char *s);
   GBool setVectorAntialias(char *s);
@@ -402,6 +410,7 @@ public:
   void setMapUnknownCharNames(GBool map);
   void setMapExtTrueTypeFontsViaUnicode(GBool map);
   void setTabStateFile(char *tabStateFileA);
+  void setSessionFile(char *sessionFileA);
   void setPrintCommands(GBool printCommandsA);
   void setPrintStatusInfo(GBool printStatusInfoA);
   void setErrQuiet(GBool errQuietA);
@@ -417,6 +426,8 @@ private:
 
   void setDataDirVar();
   void createDefaultKeyBindings();
+  void initStateFilePaths();
+  FILE *openConfigFile(const char *cfgFileName, GString **fileName);
   void parseFile(GString *fileName, FILE *f);
   GList *parseLineTokens(char *buf, GString *fileName, int line);
   void parseNameToUnicode(GList *tokens, GString *fileName, int line);
@@ -447,6 +458,8 @@ private:
 		 const char *cmdName,
 		 GList *tokens, GString *fileName, int line);
   void parsePopupMenuCmd(GList *tokens, GString *fileName, int line);
+  void parseZoomScaleFactor(GList *tokens, GString *fileName, int line);
+  void parseZoomValues(GList *tokens, GString *fileName, int line);
   void parseYesNo(const char *cmdName, GBool *flag,
 		  GList *tokens, GString *fileName, int line);
   GBool parseYesNo2(char *token, GBool *flag);
@@ -545,7 +558,9 @@ private:
   GBool textKeepTinyChars;	// keep all characters in text output
   GString *initialZoom;		// initial zoom level
   int defaultFitZoom;		// default zoom factor if initialZoom is
-				//   'page' or 'width'.
+				//   'page' or 'width'
+  double zoomScaleFactor;	// displayed zoom values are scaled by this
+  GList *zoomValues;		// zoom values for the combo box
   GString *initialDisplayMode;	// initial display mode (single,
 				//   continuous, etc.)
   GBool initialToolbarState;	// initial toolbar state - open (true)
@@ -554,6 +569,7 @@ private:
 				//   or closed (false)
   int initialSidebarWidth;	// initial sidebar width
   GString *initialSelectMode;	// initial selection mode (block or linear)
+  GBool initialMaximized;	// initial window maximized state
   int maxTileWidth;		// maximum rasterization tile width
   int maxTileHeight;		// maximum rasterization tile height
   int tileCacheSize;		// number of rasterization tiles in cache
@@ -577,12 +593,14 @@ private:
   GBool drawAnnotations;	// draw annotations or not
   GBool drawFormFields;		// draw form fields or not
   GBool enableXFA;		// enable XFA form parsing
+  GBool preferXFAFieldValues;	// prefer XFA field values over AcroForm values
   GBool overprintPreview;	// enable overprint preview
   GString *paperColor;		// paper (page background) color
   GString *matteColor;		// matte (background outside of page) color
   GString *fullScreenMatteColor; // matte color in full-screen mode
   GString *selectionColor;	// selection color
   GBool reverseVideoInvertImages; // invert images in reverse video mode
+  GBool allowLinksToChangeZoom;	// allow clicking on a link to change the zoom
   GString *launchCommand;	// command executed for 'launch' links
   GString *movieCommand;	// command executed for movie annotations
   GString *defaultPrinter;	// default printer (for interactive printing
@@ -594,10 +612,17 @@ private:
   GBool useTrueTypeUnicodeMapping;	// use the Unicode cmaps in TrueType
 					//   fonts, rather than the PDF
 					//   ToUnicode mapping
+  GBool ignoreWrongSizeToUnicode;  // ignore ToUnicode CMaps if their size
+				   //   (8-bit vs 16-bit) doesn't match the font
   GHash *droppedFonts;		// dropped fonts [int]
+  GBool separateRotatedText;	// separate text at each rotation
+  GBool discardCoveredText;	// discard text covered by fill or image
   GList *keyBindings;		// key & mouse button bindings [KeyBinding]
   GList *popupMenuCmds;		// popup menu commands [PopupMenuCmd]
+  GString *pagesFile;		// path for the page number save file
   GString *tabStateFile;	// path for the tab state save file
+  GString *sessionFile;		// path for the session save file
+  GBool saveSessionOnQuit;	// save session info when xpdf is quit
   GBool savePageNumbers;	// save page number when file is closed
 				//   and restore page number when opened
   GBool printCommands;		// print the drawing commands
