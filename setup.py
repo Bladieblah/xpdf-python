@@ -6,11 +6,13 @@ import numpy as np
 from setuptools.command.build_ext import build_ext
 from setuptools import Extension, setup
 
+xpdf_src_dir = "src/xpdf-4.06"
+
 python_dir = Path("src/xpydf")
-xpdf_dir = Path("src/xpdf-4.04/xpdf")
-splash_dir = Path("src/xpdf-4.04/splash")
-fofi_dir = Path("src/xpdf-4.04/fofi")
-goo_dir = Path("src/xpdf-4.04/goo")
+xpdf_dir = Path(f"{xpdf_src_dir}/xpdf")
+splash_dir = Path(f"{xpdf_src_dir}/splash")
+fofi_dir = Path(f"{xpdf_src_dir}/fofi")
+goo_dir = Path(f"{xpdf_src_dir}/goo")
 
 python_src = glob(str(python_dir / "*.cc"))
 splash_src = glob(str(splash_dir / "*.cc"))
@@ -137,7 +139,7 @@ cXpdfPython = Extension(
     "cXpdfPython",
     sources = python_src + xpdf_src + splash_src + goo_src + fofi_src + freetype_sources,
     include_dirs = [
-        "src/xpdf-4.04",
+        str(xpdf_src_dir),
         str(xpdf_dir),
         str(fofi_dir),
         str(splash_dir),

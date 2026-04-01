@@ -119,7 +119,7 @@ std::vector<std::string> PdfLoader::extractText() {
   if (textOut->isOk()) {
     for (int page = firstPage; page <= lastPage; page++) {
       stream->str("");
-      doc->displayPages(textOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
+      doc->displayPages(textOut, NULL, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
       pages.push_back(stream->str());
     }
   } 
@@ -147,7 +147,7 @@ std::vector<PageImageInfo> PdfLoader::extractPageInfo() {
   firstPage = 1;
   lastPage = doc->getNumPages();
   
-  imageOut = new ImageInfoDev(dummyFile, gFalse, gFalse, gTrue);
+  imageOut = new ImageInfoDev(dummyFile, gFalse, gFalse, gFalse, gFalse, gTrue, gFalse);
 
   if (imageOut->isOk()) {
     for (int page = firstPage; page <= lastPage; page++) {
@@ -156,7 +156,7 @@ std::vector<PageImageInfo> PdfLoader::extractPageInfo() {
       double page_width = box->x2 - box->x1;
       double page_height = box->y2 - box->y1;
       
-      doc->displayPages(imageOut, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
+      doc->displayPages(imageOut, NULL, page, page, 72, 72, 0, gFalse, gTrue, gFalse);
 
       std::vector<ImageInfo> images(imageOut->images);
       pagesInfo.push_back(PageImageInfo{
@@ -187,10 +187,10 @@ std::vector<Image> PdfLoader::extractImages(int pageNum) {
     goto err;
   }
   
-  imageOut = new ImageDataDev(dummyFile, gFalse, gFalse, gTrue, &images);
+  imageOut = new ImageDataDev(dummyFile, gFalse, gFalse, gFalse, gFalse, gTrue, gFalse, &images);
 
   if (imageOut->isOk()) {
-    doc->displayPages(imageOut, pageNum, pageNum, 72, 72, 0, gFalse, gTrue, gFalse);
+    doc->displayPages(imageOut, NULL, pageNum, pageNum, 72, 72, 0, gFalse, gTrue, gFalse);
   }
 
   delete imageOut;
@@ -222,7 +222,7 @@ Image PdfLoader::pageToImage(int pageNum, int dpi) {
   
   splashOut->startDoc(doc->getXRef());
 
-  doc->displayPages(splashOut, pageNum, pageNum, dpi, dpi, 0, gFalse, gTrue, gFalse);
+  doc->displayPages(splashOut, NULL, pageNum, pageNum, dpi, dpi, 0, gFalse, gTrue, gFalse);
   bitmap = splashOut->getBitmap();
   
   pageImage = {

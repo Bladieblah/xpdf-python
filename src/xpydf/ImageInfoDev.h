@@ -16,8 +16,15 @@ typedef struct ImageInfo {
 
 class ImageInfoDev: public ImageOutputDev {
 public:
-  ImageInfoDev(char *fileRootA, GBool dumpJPEGA, GBool dumpRawA,
-		 GBool listA) : ImageOutputDev(fileRootA, dumpJPEGA, dumpRawA, listA) {};
+  ImageInfoDev(
+    char *fileRootA,
+    GBool dumpJPEGA,
+    GBool dumpJPXA,
+		GBool dumpRawA,
+    GBool uniqueA,
+    GBool listA,
+    GBool listOnlyA
+  ) : ImageOutputDev(fileRootA, dumpJPEGA, dumpJPXA, dumpRawA, uniqueA, listA, listOnlyA) {};
 
   virtual void startPage(int pageNum, GfxState *state);
   
