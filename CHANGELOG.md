@@ -23,3 +23,6 @@
 
 # Version 0.1.6 (09-jun-2023)
  - Implement pdftopng functionality
+
+# Version 0.1.7 (18-apr-2026)
+ - Update to xpdf-4.04 sources

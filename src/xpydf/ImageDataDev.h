@@ -20,11 +20,19 @@ typedef struct Image {
 
 class ImageDataDev: public ImageOutputDev {
 public:
-  ImageDataDev(char *fileRootA, GBool dumpJPEGA, GBool dumpRawA,
-    GBool listA, std::vector<Image> *imagesA) : ImageOutputDev(fileRootA, dumpJPEGA, dumpRawA, listA) {
-      imgNum = 0;
-      images = imagesA;
-    };
+  ImageDataDev(
+    char *fileRootA,
+    GBool dumpJPEGA,
+    GBool dumpJPXA,
+		GBool dumpRawA,
+    GBool uniqueA,
+    GBool listA,
+    GBool listOnlyA,
+    std::vector<Image> *imagesA
+  ) : ImageOutputDev(fileRootA, dumpJPEGA, dumpJPXA, dumpRawA, uniqueA, listA, listOnlyA) {
+    imgNum = 0;
+    images = imagesA;
+  };
 
   virtual void startPage(int pageNum, GfxState *state);
   

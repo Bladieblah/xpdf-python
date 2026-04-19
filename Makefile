@@ -1,16 +1,16 @@
 PROGNAME = a.out
 OBJDIR = obj/
+XDIR = src/xpdf-4.06/
 
 CC = g++ -std=c++17
 C = gcc -pedantic -std=c99
 WARNFLAGS = -Wall
 #  -Wno-deprecated-declarations -Wno-writable-strings
-CCFLAGS = -O3 $(WARNFLAGS) -MD -Isrc/xpdf-4.04 -Isrc/xpdf-4.04/goo -Isrc/xpdf-4.04/splash -Isrc/xpdf-4.04/xpdf -Isrc/xpdf-4.04/fofi -I/usr/local/include -Isrc/freetype/include  -Isrc/freetype/include/freetype
+CCFLAGS = -O3 $(WARNFLAGS) -MD -I$(XDIR) -I$(XDIR)/goo -I$(XDIR)/splash -I$(XDIR)/xpdf -I$(XDIR)/fofi -I/usr/local/include -Isrc/freetype/include  -Isrc/freetype/include/freetype
 CFLAGS =  -O3 $(WARNFLAGS) -MD -pthread -DFT_CONFIG_CONFIG_H="<ftconfig.h>" -DFT_CONFIG_MODULES_H="<ftmodule.h>" -DFT_CONFIG_OPTIONS_H="<ftoption.h>" -DFT2_BUILD_LIBRARY -Isrc/freetype/include -Isrc/freetype/include/freetype -Isrc/freetype/include/freetype/config  -Isrc/freetype/include/freetype/internal
 
 PYDIR = src/xpydf/
 
-XDIR = src/xpdf-4.04/
 SPLASH_DIR = $(XDIR)splash/
 FOFI_DIR = $(XDIR)fofi/
 GOO_DIR = $(XDIR)goo/
@@ -163,8 +163,10 @@ clean:
 cleanft:
 	rm -fv $(PROGNAME) $(FREE_OBJ)
 
+install:
+	pip install .
+
 test:
-	$(info $(FREE_DIRS))
-	$(info $(SKIP_DIRS))
+	python -m unittest -v
 
 -include $(OBJFILES:.o=.d)
